@@ -15,6 +15,7 @@ import Spacing from "../constants/Spacing";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AppTextInput from "../components/AppTextInput";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -63,34 +64,9 @@ const LoginScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
             marginVertical: Spacing * 3,
           }}
         >
-          <TextInput
-            placeholder="E-Mail"
-            placeholderTextColor={"#969696"}
-            style={{
-              fontFamily: Font["inter-regular"],
-              backgroundColor: Colors.background,
-              borderColor: "#EBEBEB",
-              borderWidth: 1,
-              borderRadius: Spacing,
-              padding: Spacing * 2,
-              marginVertical: Spacing,
-            }}
-          />
+          <AppTextInput placeholder="E-Mail" />
 
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={"#969696"}
-            secureTextEntry
-            style={{
-              fontFamily: Font["inter-regular"],
-              backgroundColor: Colors.background,
-              borderColor: "#EBEBEB",
-              borderWidth: 1,
-              borderRadius: Spacing,
-              padding: Spacing * 2,
-              marginVertical: Spacing,
-            }}
-          />
+          <AppTextInput placeholder="Password" secureTextEntry />
         </View>
 
         <View
@@ -107,7 +83,7 @@ const LoginScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
           >
             <Text
               style={{
-                color: Colors.buttonLight,
+                color: Colors.background,
                 fontFamily: Font["inter-bold"],
                 fontSize: FontSize.medium,
                 textAlign: "center",

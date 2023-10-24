@@ -16,6 +16,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppTextInput from "../components/AppTextInput";
+import AppTouchableOpacity from "../components/AppTouchableOpacity";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -74,45 +75,13 @@ const LoginScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
             marginVertical: Spacing * 0.5,
           }}
         >
-          <TouchableOpacity
-            style={{
-              padding: Spacing * 2,
-              backgroundColor: Colors.buttonDark,
-              borderRadius: Spacing,
-            }}
-          >
-            <Text
-              style={{
-                color: Colors.background,
-                fontFamily: Font["inter-bold"],
-                fontSize: FontSize.medium,
-                textAlign: "center",
-              }}
-            >
-              Sign In
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
+          <AppTouchableOpacity text="Sign In" dark />
+          <AppTouchableOpacity
+            style={{ marginVertical: Spacing }}
+            text="Create New Account"
+            dark={false}
             onPress={() => navigate("Register")}
-            style={{
-              padding: Spacing * 2,
-              backgroundColor: Colors.buttonLight,
-              borderRadius: Spacing,
-              marginVertical: Spacing,
-            }}
-          >
-            <Text
-              style={{
-                color: Colors.textDark,
-                fontFamily: Font["inter-bold"],
-                fontSize: FontSize.medium,
-                textAlign: "center",
-              }}
-            >
-              Create New Account
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
 
         <View>

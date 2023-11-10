@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@ionic/react": "^7.5.1",
-    "@react-navigation/native-stack": "^6.9.16",
-    "ionicons": "^7.2.1"
-  }
-}

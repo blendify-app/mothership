@@ -17,8 +17,27 @@ import { RootStackParamList } from "../types";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppTextInput from "../components/AppTextInput";
 import AppTouchableOpacity from "../components/AppTouchableOpacity";
+import { auth0config } from "../config/auth0";
+import Auth0 from "react-native-auth0";
+
+const auth0 = new Auth0(auth0config);
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
+
+const handleLogin = () => {
+  auth0.webAuth
+  .authorize ({
+    scope: "openid email profile",
+    connection: "Username-Password-Authentication"
+  })
+
+  .then (credentials => {
+    const accesstoken = credentials.accessToken
+  })
+  .catch (error => {
+    alert("Error: " + error);
+  })
+}
 
 const LoginScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
   return (

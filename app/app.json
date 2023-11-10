@@ -25,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/images/BlendIcon.png"
-    }
+    },
+    "plugins": [
+      "react-native-auth0"
+    ]
   }
 }

@@ -15,19 +15,26 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.blend.myapp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/BlendIcon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.blend.myapp"
     },
     "web": {
       "favicon": "./assets/images/BlendIcon.png"
     },
     "plugins": [
-      "react-native-auth0"
+      [
+        "react-native-auth0",
+        {
+          "domain": "dev-pb2l7ig8ecavkase.us.auth0.com"
+        }
+      ]
     ]
   }
 }

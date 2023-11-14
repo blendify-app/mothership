@@ -32,7 +32,7 @@ func EnsureValidToken(r *gin.Engine) {
 		provider.KeyFunc,
 		validator.RS256,
 		issuerURL.String(),
-		[]string{"Bav87iiYxuUNK9DP6Ty7WWimpQ3CO2Lo"},
+		[]string{envVars.AUTH0_AUDIENCE},
 		validator.WithAllowedClockSkew(time.Minute),
 	)
 	if err != nil {

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 
@@ -19,27 +20,25 @@ func EnsureValidToken(r *gin.Engine) {
 	if err != nil {
 		fmt.Printf("Hermes error: %v", err.Error())
 	}
-	issuerURL, _ := url.Parse("https://" + envVars.AUTH0_DOMAIN + "/")
-	// if err != nil {
-	// 	log.Fatalf("Failed to parse the issuer URL: %v", err)
-	// 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse issuer URL"})
-	// 	return
-	// }
+	issuerURL, err := url.Parse("https://" + envVars.AUTH0_DOMAIN + "/")
+	if err != nil {
+		log.Fatalf("Failed to parse the issuer URL: %v", err)
+		return
+	}
 
 	provider := jwks.NewCachingProvider(issuerURL, time.Duration(5*time.Minute))
 
-	jwtValidator, _ := validator.New(
+	jwtValidator, err := validator.New(
 		provider.KeyFunc,
 		validator.RS256,
 		issuerURL.String(),
-		[]string{envVars.AUTH0_AUDIENCE},
+		[]string{"Bav87iiYxuUNK9DP6Ty7WWimpQ3CO2Lo"},
 		validator.WithAllowedClockSkew(time.Minute),
 	)
-	// if err != nil {
-	// 	log.Fatalf("Failed to set up the jwt validator: %v", err)
-	// 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to set up JWT validator"})
-	// 	return
-	// }
+	if err != nil {
+		log.Fatalf("Failed to set up the jwt validator: %v", err)
+		return
+	}
 
 	middleware := jwtmiddleware.New(jwtValidator.ValidateToken)
 

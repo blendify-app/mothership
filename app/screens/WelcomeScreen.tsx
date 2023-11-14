@@ -71,7 +71,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
           style={{
             paddingHorizontal: Spacing * 1.5,
             paddingVertical: Spacing * 7,
-            flexDirection: "row",
+            // alignSelf: "center"
           }}
         >
           <TouchableOpacity
@@ -80,13 +80,14 @@ const WelcomeScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
               backgroundColor: Colors.buttonDark,
               paddingVertical: Spacing * 1.5,
               paddingHorizontal: Spacing * 2,
-              width: "48%",
+              width: Layout.width/1.5,
               borderRadius: Spacing,
               shadowColor: Colors.textDark,
               shadowOffset: {
                 width: 0,
                 height: Spacing,
               },
+              alignSelf:"center",
               shadowOpacity: 0.6,
               shadowRadius: Spacing,
             }}
@@ -99,37 +100,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
                 fontSize: FontSize.large,
               }}
             >
-              Login
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigate("Register")}
-            style={{
-              backgroundColor: Colors.buttonLight,
-              paddingVertical: Spacing * 1.5,
-              paddingHorizontal: Spacing * 2,
-              marginLeft: Spacing,
-              width: "48%",
-              borderRadius: Spacing,
-              shadowColor: Colors.textDark,
-              shadowOffset: {
-                width: 0,
-                height: Spacing,
-              },
-              shadowOpacity: 0.3,
-              shadowRadius: Spacing,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                color: Colors.buttonDark,
-                fontFamily: Font["inter-bold"],
-                fontSize: FontSize.large,
-              }}
-            >
-              Register
+              Get Started
             </Text>
           </TouchableOpacity>
         </View>

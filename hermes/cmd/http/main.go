@@ -7,8 +7,12 @@ import (
 	"os"
 	"time"
 
+	"net/http"
+
 	"github.com/blendify-app/mothership/hermes/config"
+	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
 	"github.com/blendify-app/mothership/hermes/internal/db"
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -35,4 +39,19 @@ func main() {
 
 	log.Printf("successfully connected to MongoDB instance: %s", envVars.MONGO_DB_NAME)
 
+	// setting up and starting the gin server
+	r := gin.Default()
+	r.GET("/healthcheck", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "hello karnataka!",
+		})
+	})
+
+	middleware.EnsureValidToken(r)
+
+	r.GET("/healthcheck-private", (func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Hello from a private endpoint! You need to be authenticated to see this."})
+	}))
+
+	r.Run(":8080")
 }

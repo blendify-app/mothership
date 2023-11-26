@@ -34,5 +34,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-#android
+# android
 android/
+
+# environment variables
+custom.d.ts

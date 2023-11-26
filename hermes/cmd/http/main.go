@@ -47,11 +47,13 @@ func main() {
 		})
 	})
 
-	middleware.EnsureValidToken(r)
+	middleware.EnsureValidToken(r, dbClient)
 
-	r.GET("/healthcheck-private", (func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Hello from a private endpoint! You need to be authenticated to see this."})
+	r.GET("/authorize", (func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "You are authorized."})
 	}))
 
-	r.Run(":8080")
+	r.Run("192.168.0.164:8080")
 }

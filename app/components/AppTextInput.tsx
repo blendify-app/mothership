@@ -10,8 +10,15 @@ import Colors from "../constants/Colors";
 import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
+import Layout from "../constants/Layout";
 
-const AppTextInput: React.FC<TextInputProps> = ({ ...otherProps }) => {
+interface AppTextInputProps extends TextInputProps {
+  style?: any;
+}
+
+const AppTextInput: React.FC<TextInputProps> = ({ 
+  style,
+  ...otherProps }) => {
   const [focused, setFocused] = useState<boolean>(false);
   return (
     <TextInput
@@ -26,9 +33,12 @@ const AppTextInput: React.FC<TextInputProps> = ({ ...otherProps }) => {
           borderColor: "#EBEBEB",
           borderWidth: 1,
           borderRadius: Spacing,
-          padding: Spacing * 2,
+          // padding: Spacing,
+          paddingHorizontal: Spacing, 
           marginVertical: Spacing,
+          // width: Layout.width/2,
         },
+        style,
         focused && { borderWidth: 2, borderColor: Colors.buttonDark },
       ]}
       {...otherProps}

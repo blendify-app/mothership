@@ -38,16 +38,9 @@ const handleLogin = async ( navigation: any) => {
   }
 }
 
-// const createUser = async (idToken: string) => {
-//   const decoded = jwt.decode(idToken)
-//   const user = {
-//     id: decoded.
-//   }
-// }
-
 const sendIdTokenToBackend = async (idToken: string, navigation: any) => {
   try {
-    const response = await fetch('http://192.168.0.164:8080/authorize', {
+    const response = await fetch('http://192.168.0.164:8080/users/authorize', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

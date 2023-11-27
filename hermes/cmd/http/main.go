@@ -9,9 +9,11 @@ import (
 
 	"net/http"
 
-	"github.com/blendify-app/mothership/hermes/config"
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+
+	"github.com/blendify-app/mothership/hermes/config"
 	"github.com/blendify-app/mothership/hermes/internal/db"
+	"github.com/blendify-app/mothership/hermes/internal/users"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -41,19 +43,19 @@ func main() {
 
 	// setting up and starting the gin server
 	r := gin.Default()
-	r.GET("/healthcheck", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "hello karnataka!",
-		})
-	})
 
 	middleware.EnsureValidToken(r, dbClient)
 
-	r.GET("/authorize", (func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "You are authorized."})
-	}))
+	v1Group := r.Group("/v1")
+	{
+		v1Group.GET("/healthcheck", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "hello karnataka!",
+			})
+		})
 
-	r.Run("192.168.0.164:8080")
+		users.UserRoutes(r, v1Group, dbClient)
+	}
+
+	r.Run("0.0.0.0:8080")
 }

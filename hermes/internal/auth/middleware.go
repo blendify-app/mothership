@@ -28,7 +28,7 @@ func (c *CustomClaims) Validate(ctx context.Context) error {
 	return nil
 }
 
-func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
+func Setup(r *gin.Engine, db *mongo.Database) {
 	envVars, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("Hermes error: %v", err.Error())
@@ -36,7 +36,7 @@ func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
 
 	issuerURL, err := url.Parse("https://" + envVars.AUTH0_DOMAIN + "/")
 	if err != nil {
-		log.Fatalf("Failed to parse the issuer URL: %v", err)
+		log.Printf("Failed to parse the issuer URL: %v", err)
 		return
 	}
 
@@ -53,7 +53,7 @@ func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
 		}),
 	)
 	if err != nil {
-		log.Fatalf("Failed to set up the jwt validator: %v", err)
+		log.Printf("Failed to set up the jwt validator: %v", err)
 		return
 	}
 
@@ -61,10 +61,10 @@ func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
 
 	r.Use(cors.Default())
 	r.Use(adapter.Wrap(middleware.CheckJWT))
-	r.Use(ExtractClaims())
+	r.Use(ExtractJWTClaims())
 }
 
-func ExtractClaims() gin.HandlerFunc {
+func ExtractJWTClaims() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := c.Request.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
 		if !ok {

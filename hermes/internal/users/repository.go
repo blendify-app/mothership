@@ -27,7 +27,7 @@ func NewRepository(db *mongo.Client) Repository {
 
 func (r *repository) Get(ctx context.Context, id string) (User, error) {
 	var user User
-	filter := bson.M{"_id": user.ID}
+	filter := bson.D{{Key: "_id", Value: id}}
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
 	return user, err
 }

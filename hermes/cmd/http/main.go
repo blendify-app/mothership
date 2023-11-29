@@ -43,14 +43,15 @@ func main() {
 
 	r := gin.Default()
 
-	v1Group := r.Group("/v1")
-	v1Group.GET("/healthcheck", func(c *gin.Context) {
+	r.GET("/healthcheck", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "hello karnataka!",
 		})
 	})
 
-	middleware.EnsureValidToken(r, dbClient)
+	middleware.Setup(r, dbClient)
+
+	v1Group := r.Group("/v1")
 
 	users.UserRoutes(r, v1Group, dbClient)
 

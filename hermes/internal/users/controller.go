@@ -23,6 +23,7 @@ func UserRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
 func AddUser(c *gin.Context, userRepository Repository) {
 	customClaims_, ok := c.Get("customClaims")
 	if !ok {
+		log.Printf("Failed to get payload map from custom claims")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get payload map",
 		})
@@ -33,20 +34,20 @@ func AddUser(c *gin.Context, userRepository Repository) {
 
 	userService := NewService(userRepository)
 
-	newUserRequest := CreateUserRequest{
-		ID:    customClaims.Sub,
-		Name:  customClaims.Name,
-		Email: customClaims.Email,
-	}
-
 	// Check if user already exists
-	existingUser, err := userService.Get(context.TODO(), newUserRequest.Email)
+	existingUser, err := userService.Get(context.TODO(), customClaims.Sub)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if !mongo.IsDuplicateKeyError(err) {
 			// User does not exist, create new user
+			newUserRequest := CreateUserRequest{
+				ID:    customClaims.Sub,
+				Name:  customClaims.Name,
+				Email: customClaims.Email,
+			}
+
 			createdUser, err := userService.Create(context.TODO(), newUserRequest)
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("%v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": "Failed to create user",
 				})
@@ -55,23 +56,23 @@ func AddUser(c *gin.Context, userRepository Repository) {
 
 			c.JSON(http.StatusOK, gin.H{
 				"success": true,
-				"message": "User created successfully.",
+				"message": "User created successfully",
 				"user":    createdUser,
 			})
+			return
 		} else {
-			// Handle other types of errors
-			log.Fatal(err)
+			log.Printf("%v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Failed to get user",
 			})
+			return
 		}
-		return
 	}
 
 	// User already exists, log them in
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "User logged in successfully.",
+		"message": "User logged in successfully",
 		"user":    existingUser,
 	})
 }

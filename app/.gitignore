@@ -37,5 +37,8 @@ yarn-error.*
 # android
 android/
 
+# ios 
+ios/
+
 # environment variables
 custom.d.ts

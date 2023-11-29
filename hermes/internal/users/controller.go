@@ -13,7 +13,6 @@ import (
 func UserRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
 	usersGroup := sg.Group("/users")
 	{
-
 		usersGroup.GET("/authorize", func(c *gin.Context) {
 			userRepository := NewRepository(db.Client())
 			AddUser(c, userRepository)

@@ -1,7 +1,6 @@
 package users
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -13,29 +12,25 @@ import (
 func UserRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
 	usersGroup := sg.Group("/users")
 	{
-		usersGroup.GET("/authorize", func(c *gin.Context) {
+		usersGroup.POST("/authorize", func(c *gin.Context) {
 			userRepository := NewRepository(db.Client())
-			AddUser(c, userRepository)
+			authorize(c, userRepository)
 		})
 	}
 }
 
-func AddUser(c *gin.Context, userRepository Repository) {
-	customClaims_, ok := c.Get("customClaims")
-	if !ok {
-		log.Printf("Failed to get payload map from custom claims")
+func authorize(c *gin.Context, userRepository Repository) {
+	customClaims, err := middleware.GetCustomClaims(c)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get payload map",
+			"error": "Failed to authorize user",
 		})
 		return
 	}
 
-	customClaims := customClaims_.(*middleware.CustomClaims)
-
 	userService := NewService(userRepository)
-
 	// Check if user already exists
-	existingUser, err := userService.Get(context.TODO(), customClaims.Sub)
+	existingUser, err := userService.Get(c.Request.Context(), customClaims.Sub)
 	if err != nil {
 		if !mongo.IsDuplicateKeyError(err) {
 			// User does not exist, create new user
@@ -45,7 +40,7 @@ func AddUser(c *gin.Context, userRepository Repository) {
 				Email: customClaims.Email,
 			}
 
-			createdUser, err := userService.Create(context.TODO(), newUserRequest)
+			createdUser, err := userService.Create(c.Request.Context(), newUserRequest)
 			if err != nil {
 				log.Printf("%v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -55,24 +50,22 @@ func AddUser(c *gin.Context, userRepository Repository) {
 			}
 
 			c.JSON(http.StatusOK, gin.H{
-				"success": true,
 				"message": "User created successfully",
-				"user":    createdUser,
-			})
-			return
-		} else {
-			log.Printf("%v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Failed to get user",
+				"data":    createdUser,
 			})
 			return
 		}
+
+		log.Printf("%v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get user",
+		})
+		return
 	}
 
 	// User already exists, log them in
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
 		"message": "User logged in successfully",
-		"user":    existingUser,
+		"data":    existingUser,
 	})
 }

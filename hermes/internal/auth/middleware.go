@@ -80,3 +80,12 @@ func ExtractJWTClaims() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func GetCustomClaims(c *gin.Context) (*CustomClaims, error) {
+	customClaims_, ok := c.Get("customClaims")
+	if !ok {
+		return nil, fmt.Errorf("failed to get payload map from custom claims")
+	}
+
+	return customClaims_.(*CustomClaims), nil
+}

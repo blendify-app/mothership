@@ -11,8 +11,8 @@ import (
 type Repository interface {
 	Get(ctx context.Context, id string) (User, error)
 	Create(ctx context.Context, user User) (*mongo.InsertOneResult, error)
-	Update(ctx context.Context, user User) error
-	Delete(ctx context.Context, id string) error
+	Update(ctx context.Context, user User) (*mongo.UpdateResult, error)
+	Delete(ctx context.Context, id string) (*mongo.DeleteResult, error)
 }
 
 type repository struct {
@@ -37,16 +37,13 @@ func (r *repository) Create(ctx context.Context, user User) (*mongo.InsertOneRes
 	return insertedResult, err
 }
 
-func (r *repository) Update(ctx context.Context, user User) error {
+func (r *repository) Update(ctx context.Context, user User) (*mongo.UpdateResult, error) {
 	filter := bson.M{"_id": user.ID}
 	update := bson.M{"$set": user}
-
-	_, err := r.collection.UpdateOne(ctx, filter, update)
-	return err
+	return r.collection.UpdateOne(ctx, filter, update)
 }
 
-func (r *repository) Delete(ctx context.Context, id string) error {
+func (r *repository) Delete(ctx context.Context, id string) (*mongo.DeleteResult, error) {
 	filter := bson.M{"_id": id}
-	_, err := r.collection.DeleteOne(ctx, filter)
-	return err
+	return r.collection.DeleteOne(ctx, filter)
 }

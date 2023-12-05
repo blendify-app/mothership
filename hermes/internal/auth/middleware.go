@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -18,14 +18,25 @@ import (
 	adapter "github.com/gwatts/gin-adapter"
 )
 
-func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
+type CustomClaims struct {
+	Sub   string `json:"sub"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func (c *CustomClaims) Validate(ctx context.Context) error {
+	return nil
+}
+
+func Setup(r *gin.Engine, db *mongo.Database) {
 	envVars, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("Hermes error: %v", err.Error())
 	}
+
 	issuerURL, err := url.Parse("https://" + envVars.AUTH0_DOMAIN + "/")
 	if err != nil {
-		log.Fatalf("Failed to parse the issuer URL: %v", err)
+		log.Printf("Failed to parse the issuer URL: %v", err)
 		return
 	}
 
@@ -37,40 +48,44 @@ func EnsureValidToken(r *gin.Engine, db *mongo.Database) {
 		issuerURL.String(),
 		[]string{envVars.AUTH0_AUDIENCE},
 		validator.WithAllowedClockSkew(time.Minute),
+		validator.WithCustomClaims(func() validator.CustomClaims {
+			return &CustomClaims{}
+		}),
 	)
-
 	if err != nil {
-		log.Fatalf("Failed to set up the jwt validator: %v", err)
+		log.Printf("Failed to set up the jwt validator: %v", err)
 		return
 	}
-	r.Use(cors.Default())
 
 	middleware := jwtmiddleware.New(jwtValidator.ValidateToken)
+
+	r.Use(cors.Default())
 	r.Use(adapter.Wrap(middleware.CheckJWT))
-	r.Use(ExtractClaims())
+	r.Use(ExtractJWTClaims())
 }
 
-func ExtractClaims() gin.HandlerFunc {
+func ExtractJWTClaims() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := c.Request.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
 		if !ok {
-			// Handle error
-			log.Fatal("Failed to extract claims from token")
+			log.Println("Failed to extract claims from token")
 		}
 
-		payload, err := json.Marshal(claims)
-		if err != nil {
-			log.Fatal("Failed to parse jsw claims")
+		customClaims, ok := claims.CustomClaims.(*CustomClaims)
+		if !ok {
+			log.Println("Failed to extract custom claims from token")
 		}
 
-		payloadMap := make(map[string]interface{})
-		err = json.Unmarshal(payload, &payloadMap)
-		if err != nil {
-			log.Fatal("Failed to convert payload into a map")
-		}
-
-		fmt.Println(payloadMap)
-
+		c.Set("customClaims", customClaims)
 		c.Next()
 	}
+}
+
+func GetCustomClaims(c *gin.Context) (*CustomClaims, error) {
+	customClaims_, ok := c.Get("customClaims")
+	if !ok {
+		return nil, fmt.Errorf("failed to get payload map from custom claims")
+	}
+
+	return customClaims_.(*CustomClaims), nil
 }

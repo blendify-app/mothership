@@ -44,6 +44,7 @@ func getProfile(c *gin.Context, profileRepository Repository) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Failed to get profile",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, userProfile)

@@ -13,22 +13,16 @@ type service struct {
 
 type Service interface {
 	Get(ctx context.Context, id string) (User, error)
-	Create(ctx context.Context, input CreateUserRequest) (User, error)
+	Create(ctx context.Context, user User) (User, error)
 	// Update(ctx context.Context, id string, input UpdateUserRequest) (User, error)
 	Delete(ctx context.Context, id string) (bool, error)
-}
-
-type CreateUserRequest struct {
-	Name  string `json:"name" bson:"name"`
-	ID    string `json:"id" bson:"id"`
-	Email string `json:"email" bson:"email" `
 }
 
 // type UpdateUserRequest struct {
 // 	ID string `json:"id" bson:"id"`
 // }
 
-func (m CreateUserRequest) validate() error {
+func (m User) validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Name, validation.Required),
 		validation.Field(&m.ID, validation.Required),
@@ -55,25 +49,17 @@ func (s service) Get(ctx context.Context, id string) (User, error) {
 	return user, nil
 }
 
-func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error) {
-	if err := req.validate(); err != nil {
+func (s service) Create(ctx context.Context, user User) (User, error) {
+	if err := user.validate(); err != nil {
 		return User{}, err
 	}
 
-	_, err := s.repo.Create(ctx, User{
-		ID:    req.ID,
-		Name:  req.Name,
-		Email: req.Email,
-	})
+	_, err := s.repo.Create(ctx, user)
 	if err != nil {
 		return User{}, err
 	}
 
-	return User{
-		ID:    req.ID,
-		Name:  req.Name,
-		Email: req.Email,
-	}, nil
+	return user, nil
 }
 
 // func (s service) Update(ctx context.Context, id string, req UpdateUserRequest) (User, error) {

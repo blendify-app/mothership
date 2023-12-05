@@ -1,6 +1,9 @@
 package roulette
 
+const RouletteObject string = "roulette"
+
 type Roulette struct {
-	ID     string `json:"_id,omitempty" bson:"_id,omitempty"`
-	UserID string `json:"user_id,omitempty" bson:"user_id,omitempty"`
+	ID     string `json:"id" bson:"_id"`
+	Object string `json:"object" bson:"object"`
+	UserID string `json:"user_id" bson:"user_id"`
 }

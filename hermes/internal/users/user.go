@@ -1,7 +1,11 @@
 package users
 
+const UserObject string = "user"
+
 type User struct {
-	ID    string `json:"_id,omitempty" bson:"_id,omitempty"`
-	Name  string `json:"name" bson:"name"`
-	Email string `json:"email" bson:"email"`
+	ID      string `json:"id" bson:"_id"`
+	Object  string `json:"object" bson:"object"`
+	Name    string `json:"name" bson:"name"`
+	Email   string `json:"email" bson:"email"`
+	Profile string `bson:"profile" json:"profile"`
 }

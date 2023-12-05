@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/profiles"
 	"github.com/blendify-app/mothership/hermes/internal/roulette"
 
 	"github.com/blendify-app/mothership/hermes/config"
@@ -32,7 +33,7 @@ func main() {
 	if err := dbClient.Client().Database(envVars.MONGO_DB_NAME).RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Decode(&result); err != nil {
 		log.Fatalf("hermes_error: failed to ping %s (%v)", envVars.MONGO_DB_NAME, err.Error())
 	} else {
-		log.Printf("successfully connected to MongoDB instance: %s", envVars.MONGO_DB_NAME)
+		log.Printf("hermes: successfully connected to MongoDB instance: %s", envVars.MONGO_DB_NAME)
 	}
 
 	r := gin.Default()
@@ -47,6 +48,7 @@ func main() {
 
 	v1Group := r.Group("/v1")
 	users.UserRoutes(r, v1Group, dbClient)
+	profiles.ProfileRoutes(r, v1Group, dbClient)
 	roulette.RouletteRoutes(r, v1Group, dbClient)
 
 	r.Run("0.0.0.0:8080")

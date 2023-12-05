@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/profiles"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -14,15 +16,17 @@ func UserRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
 	{
 		usersGroup.POST("/authorize", func(c *gin.Context) {
 			userRepository := NewRepository(db.Client())
-			authorize(c, userRepository)
+			profileRepository := profiles.NewRepository(db.Client())
+			authorize(c, userRepository, profileRepository)
 		})
 	}
 }
 
-func authorize(c *gin.Context, userRepository Repository) {
+func authorize(c *gin.Context, userRepository Repository, profileRepository profiles.Repository) {
 	customClaims, err := middleware.GetCustomClaims(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		log.Printf("%v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Failed to authorize user",
 		})
 		return
@@ -34,13 +38,37 @@ func authorize(c *gin.Context, userRepository Repository) {
 	if err != nil {
 		if !mongo.IsDuplicateKeyError(err) {
 			// User does not exist, create new user
-			newUserRequest := CreateUserRequest{
-				ID:    customClaims.Sub,
-				Name:  customClaims.Name,
-				Email: customClaims.Email,
+			oid := primitive.NewObjectID()
+			newProfile := profiles.Profile{
+				ID:     oid.Hex(),
+				Object: profiles.ProfileObject,
+				UserID: customClaims.Sub,
+				Basic: profiles.Basic{
+					Email:    customClaims.Email,
+					Name:     customClaims.Name,
+					Nickname: customClaims.Nickname,
+					Picture:  customClaims.Picture},
 			}
 
-			createdUser, err := userService.Create(c.Request.Context(), newUserRequest)
+			profileService := profiles.NewService(profileRepository)
+			_, err := profileService.Create(c.Request.Context(), newProfile)
+			if err != nil {
+				log.Printf("%v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": "Failed to create profile for user",
+				})
+				return
+			}
+
+			newUser := User{
+				ID:      customClaims.Sub,
+				Object:  UserObject,
+				Name:    customClaims.Name,
+				Email:   customClaims.Email,
+				Profile: oid.Hex(),
+			}
+
+			user, err := userService.Create(c.Request.Context(), newUser)
 			if err != nil {
 				log.Printf("%v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -50,8 +78,8 @@ func authorize(c *gin.Context, userRepository Repository) {
 			}
 
 			c.JSON(http.StatusOK, gin.H{
-				"message": "User created successfully",
-				"data":    createdUser,
+				"message": "User created",
+				"data":    user,
 			})
 			return
 		}
@@ -65,7 +93,7 @@ func authorize(c *gin.Context, userRepository Repository) {
 
 	// User already exists, log them in
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User logged in successfully",
+		"message": "User logged in",
 		"data":    existingUser,
 	})
 }

@@ -19,9 +19,11 @@ import (
 )
 
 type CustomClaims struct {
-	Sub   string `json:"sub"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Sub      string `json:"sub"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Nickname string `json:"nickname"`
+	Picture  string `json:"picture"`
 }
 
 func (c *CustomClaims) Validate(ctx context.Context) error {

@@ -1,24 +1,28 @@
-import { Text, View, TouchableOpacity } from 'react-native'
+import { Text, View, TouchableOpacity, TouchableOpacityProps, } from 'react-native'
 import React, { Component, useState } from 'react'
 import Spacing from '../constants/Spacing';
 import Colors from '../constants/Colors';
 import Font from '../constants/Font';
 import FontSize from '../constants/FontSize';
 
-interface RadioButtonGroupProps {
-    options: string[];
-    onSelect: (selectedOption: string) => void;
+interface OptionButtonProps extends TouchableOpacityProps{
     style?: any;
+    text: string;
 }
 
 
-const RadioButtonGroup: React.FC<RadioButtonGroupProps> = ({ options, onSelect, style, ...otherProps}) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+const OptionButton: React.FC<OptionButtonProps> = ({ text, style, ...otherProps}) => {
 
-    const handleSelect = (option: string) => {
-        setSelectedOption(option);
-        onSelect(option);
-    };
+    const [isSelected, setIsSelected] = useState(false);
+
+    const handlePress = ( event:any ) => {
+        setIsSelected(!isSelected);
+        if (otherProps.onPress) {
+          otherProps.onPress(event);
+        }
+      };
+
+
 
     return (
         <View style={{
@@ -26,38 +30,34 @@ const RadioButtonGroup: React.FC<RadioButtonGroupProps> = ({ options, onSelect, 
             flexWrap: "wrap",
             
         }}>
-            {options.map((option) => (
-                <TouchableOpacity key={option} style={[
+                <TouchableOpacity style={[
                     {
-                        backgroundColor: Colors.buttonLight,
+                        backgroundColor: isSelected ? Colors.buttonDark : Colors.buttonLight,
                         borderRadius: Spacing,
                         paddingVertical: Spacing,
                         paddingHorizontal: Spacing/1.5,
-                        width: "40%",
-                        flexBasis: "46%",
+                        // width: "40%",
+                        flexBasis: "98%",
                         marginVertical: Spacing/2,
                         marginHorizontal: Spacing/2,
                     },
                     style,
-                    selectedOption === option && {backgroundColor: Colors.buttonDark}
                 ]}
                 {...otherProps}
-                onPress={() => handleSelect(option)}
+                onPress={handlePress}
                 >
                     <Text style={[
                         {
-                            color: selectedOption === option ? Colors.background : Colors.textDark,
+                            color: isSelected ? Colors.background : Colors.textDark,
                             fontFamily: Font["inter-regular"],
                             fontSize: FontSize.medium,
-                            // textAlign: "center",
                         },
                     ]}>
-                        {option}
+                        {text}
                     </Text>
                 </TouchableOpacity>
-            ))}
         </View>
     );
 }
 
-export default RadioButtonGroup
+export default OptionButton;

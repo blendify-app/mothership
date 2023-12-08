@@ -17,6 +17,8 @@ import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
 import { RootStackParamList } from "../types";
 import Layout from "../constants/Layout";
+import { storage } from "./LoginScreen";
+
 
 type Props = NativeStackScreenProps<RootStackParamList, "Basic">;
 

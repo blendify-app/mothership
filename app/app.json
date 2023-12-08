@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "my-app",
+    "scheme": "blendapp",
     "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,7 +24,18 @@
         "foregroundImage": "./assets/images/BlendIcon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.blend.myapp"
+      "package": "com.blend.myapp",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "blendapp"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/images/BlendIcon.png"

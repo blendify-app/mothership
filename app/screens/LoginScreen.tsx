@@ -18,20 +18,33 @@ import Spacing from "../constants/Spacing";
 import { RootStackParamList } from "../types";
 import { auth0config } from "../config/auth0";
 import Auth0 from "react-native-auth0";
+import { MMKV } from "react-native-mmkv";
 // import jwt from "jsonwebtoken";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 const auth0 = new Auth0(auth0config);
 
+export const storage = new MMKV()
+
 
 const handleLogin = async ( navigation: any) => {
   try {
     const credentials = await auth0.webAuth.authorize({
-      scope: "openid email profile",
+      scope: "openid email profile offline_access",
       connection: "google-oauth2"
     });
     const idToken = credentials.idToken;
-    console.log(idToken);
+    const refToken = credentials.refreshToken || "";
+    const expiry = credentials.expiresAt;
+
+
+    console.log(credentials);
+    
+    storage.set("authToken", idToken)
+    storage.set("refreshToken", refToken)
+    storage.set("expiry", expiry)
+
+
     sendIdTokenToBackend(idToken, navigation)
   } catch (error) {
     alert("Error: " + error);
@@ -40,7 +53,7 @@ const handleLogin = async ( navigation: any) => {
 
 const sendIdTokenToBackend = async (idToken: string, navigation: any) => {
   try {
-    const response = await fetch('http://192.168.0.164:8080/users/authorize', {
+    const response = await fetch('http://192.168.0.152:8080/v1/users/authorize', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

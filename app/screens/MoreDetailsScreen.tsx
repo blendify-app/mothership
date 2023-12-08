@@ -7,9 +7,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView
+  ScrollView,
 } from "react-native";
-import { Auth0Provider } from 'react-native-auth0';
+import { Auth0Provider } from "react-native-auth0";
 import AppTextInput from "../components/AppTextInput";
 import AppTouchableOpacity from "../components/AppTouchableOpacity";
 import Colors from "../constants/Colors";
@@ -19,165 +19,174 @@ import Spacing from "../constants/Spacing";
 import { RootStackParamList } from "../types";
 import Layout from "../constants/Layout";
 import RadioButtonGroup from "../components/RadioButtonGroup";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MoreDetails">;
 
+const validationSchema = Yup.object().shape({
+  Gender: Yup.string().required('Gender is a required option'),
+  Pronoun: Yup.string().required('Pronoun is a required option'),
+  Sexuality: Yup.string().required('Sexuality is a required option'),
+  Religion: Yup.string().required('Religion is a required option'),
+  Zodiac: Yup.string().required('Zodiac is a required option'),
+});
+
 const MoreDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
-  const handleGenderSelect = (selectedOption: string) => {
-    console.log("Selected Gender: ", selectedOption);
-  };
-
-  const handlePronounSelect = (selectedOption: string) => {
-    console.log("Selected Pronoun: ", selectedOption)
-  };
-
-  const handleSexualitySelect = (selectedOption: string) => {
-    console.log("Selected Sexuality: ", selectedOption)
-  };
-
-  const handleReligionSelect = (selectedOption: string) => {
-    console.log("Selected Religion: ", selectedOption)
-  };
-
-  const handleZodiacSelect = (selectedOption: string) => {
-    console.log("Selected Star Sign: ", selectedOption)
-  };
-
-  const genderOptions = ["Male", "Female", "Non-binary"];  
-  const pronounOptions = ["He/Him", "She/Her", "They/Them", "Prefer not to Say"];
+  const genderOptions = ["Male", "Female", "Non-binary", "Prefer not to Say"];
+  const pronounOptions = [
+    "He/Him",
+    "She/Her",
+    "They/Them",
+    "Prefer not to Say",
+  ];
   const sexualityOptions = ["Straight", "Bisexual", "Gay", "Prefer not to Say"];
-  const religionOptions = ["Hindu", "Muslim", "Christian", "Jain", "Sikh", "Prefer not to Say"];
-  const zodiacOptions = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces", "Prefer not to Say"];
-  return (
-      <SafeAreaView>
-        <ScrollView
-        style={{
-          paddingHorizontal: Spacing * 4,
-          paddingTop: Spacing * 8
-        }}>
-          <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-          }}>
-            Blend
-          </Text>
+  const religionOptions = [
+    "Hindu",
+    "Muslim",
+    "Christian",
+    "Jain",
+    "Sikh",
+    "Prefer not to Say",
+  ];
+  const zodiacOptions = [
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
+    "Prefer not to Say",
+  ];
 
-          <Text
-          style={{
-            paddingTop: Spacing * 3,
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-          }}
-        >
-          Start filling out your account!
-        </Text>
+  const initialValues = {
+    Gender: "",
+    Pronoun: "",
+    Sexuality: "",
+    Religion: "",
+    Zodiac: "",
+  };
 
-        <Text style={{
-          marginVertical: Spacing,
-          fontFamily: Font["inter-regular"],
-          fontSize: FontSize.small,
-          color: Colors.textDark
-        }}>
-          Adding more about yourself allows others to see more of what makes you, you. Don’t worry about writing too much, or being too talkative. We’ve got your back.
-        </Text>
-
-        <View style={{
-            marginVertical: Spacing * 2,
-        }}>
-            <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-            marginBottom: Spacing,
-          }}>
-            Gender
-            </Text>
-
-            <RadioButtonGroup options={genderOptions} onSelect={handleGenderSelect} />
-            <AppTextInput placeholder="Other" style={{padding: Spacing}}/>    
-        </View>
-        
-
-        <View style={{
-            marginVertical: Spacing * 2,
-        }}>
-          <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-            marginBottom: Spacing,
-          }}>
-            Pronouns
-            </Text>
-                <RadioButtonGroup options={pronounOptions} onSelect={handlePronounSelect}/>
-                <AppTextInput placeholder="Other" style={{padding: Spacing,}}/>
-          
-          </View>
-
-          <View style={{
-            marginVertical: Spacing * 2,
-        }}>
-          <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-            marginBottom: Spacing,
-          }}>
-            Sexuality
-            </Text>
-                <RadioButtonGroup options={sexualityOptions} onSelect={handleSexualitySelect}/>
-                <AppTextInput placeholder="Other" style={{padding: Spacing}}/>
-          
-          </View>
-
-          <View style={{
-            marginVertical: Spacing * 2,
-        }}>
-          <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-            marginBottom: Spacing,
-          }}>
-            Religion
-            </Text>
-                <RadioButtonGroup options={religionOptions} onSelect={handleReligionSelect}/>
-                <AppTextInput placeholder="Other" style={{padding: Spacing}}/>
-          
-          </View>
-
-          <View style={{
-            marginVertical: Spacing * 2,
-        }}>
-          <Text style={{
-            fontFamily: Font["inter-bold"],
-            fontSize: FontSize.medium,
-            color: Colors.textDark,
-            marginBottom: Spacing,
-          }}>
-            Zodiac
-            </Text>
-                <RadioButtonGroup options={zodiacOptions} onSelect={handleZodiacSelect}/>
-          
-          </View>
-
-          <View style={{
-            marginVertical: Spacing * 2
-          }}>
-            <AppTouchableOpacity text="Next" dark/>
-          </View>
-
-          <View style={{
-            marginVertical: Spacing * 6,
-          }}>
-
-          </View>
-
-        </ScrollView>
-      </SafeAreaView>
-    )
+  interface FormValues {
+    Gender: string;
+    Pronoun: string;
+    Sexuality: string;
+    Religion: string;
+    Zodiac: string;
   }
+
+  const fields = {
+    Gender: genderOptions,
+    Pronoun: pronounOptions,
+    Sexuality: sexualityOptions,
+    Religion: religionOptions,
+    Zodiac: zodiacOptions,
+  };
+
+  const onSubmit = (values: FormValues) => {
+    console.log(values);
+    navigate("Education")
+  };
+
+  return (
+    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
+      {({ handleChange, handleBlur, submitForm, values, errors, touched }) => (
+        <SafeAreaView>
+          <ScrollView
+            style={{
+              paddingHorizontal: Spacing * 4,
+              paddingTop: Spacing * 8,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: Font["inter-bold"],
+                fontSize: FontSize.medium,
+                color: Colors.textDark,
+              }}
+            >
+              Blend
+            </Text>
+
+            <Text
+              style={{
+                paddingTop: Spacing * 3,
+                fontFamily: Font["inter-bold"],
+                fontSize: FontSize.medium,
+                color: Colors.textDark,
+              }}
+            >
+              Start filling out your account!
+            </Text>
+
+            <Text
+              style={{
+                marginVertical: Spacing,
+                fontFamily: Font["inter-regular"],
+                fontSize: FontSize.small,
+                color: Colors.textDark,
+              }}
+            >
+              Adding more about yourself allows others to see more of what makes
+              you, you. Don’t worry about writing too much, or being too
+              talkative. We’ve got your back.
+            </Text>
+        
+              {
+                Object.entries(fields).map(([key, options]) => {
+                  return (
+                    <View
+                    style={{
+                      marginVertical: Spacing * 2,
+                    }}
+                    key={key}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: Font["inter-bold"],
+                        fontSize: FontSize.medium,
+                        color: Colors.textDark,
+                        marginBottom: Spacing,
+                      }}
+                    >
+                      {key}
+                    </Text>
+      
+                    <RadioButtonGroup
+                      options={options}
+                      onSelect={handleChange(key)}
+                    />
+                    {(errors as any)[key] && (touched as any)[key] && <Text style={{ color: 'red' }}>{(errors as any)[key]}</Text>}
+                  </View>
+
+                  )
+                })
+              }
+
+            <View
+              style={{
+                marginVertical: Spacing * 2,
+              }}
+            >
+              <AppTouchableOpacity text="Next" dark onPress={submitForm}/>
+            </View>
+
+            <View
+              style={{
+                marginVertical: Spacing * 6,
+              }}
+            ></View>
+          </ScrollView>
+        </SafeAreaView>
+      )}
+    </Formik>
+  );
+};
 
 export default MoreDetailsScreen;

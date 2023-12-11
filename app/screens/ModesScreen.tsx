@@ -14,6 +14,7 @@ import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
 import OptionButton from "../components/OptionButton";
 
+
 type Props = NativeStackScreenProps<RootStackParamList, "Modes">;
 
 const ModesScreen: React.FC<Props> = ({ navigation: { navigate } }) => {

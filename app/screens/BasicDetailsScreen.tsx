@@ -17,12 +17,26 @@ import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
 import { RootStackParamList } from "../types";
 import Layout from "../constants/Layout";
-import { storage } from "./LoginScreen";
+import { useQueryClient, QueryKey } from '@tanstack/react-query';
+import { mmkvStorage } from "../lib/mmkv";
+
+interface details {
+  email: string,
+  id: string,
+  name: string,
+  object: string,
+  profile: string
+};
 
 
 type Props = NativeStackScreenProps<RootStackParamList, "Basic">;
 
 const BasicDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
+    const id = mmkvStorage.getString("userid")
+    const queryClient = useQueryClient();
+    const userdetails = queryClient.getQueryData<{ data: details }>(['user', id])
+
+    const name = userdetails?.data.name
     return (
       <SafeAreaView>
         <View
@@ -63,7 +77,7 @@ const BasicDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
           marginVertical: Spacing * 3,
           paddingHorizontal: Spacing * 4,
         }}>
-          <AppTextInput placeholder="Name" style={{width:"100%"}}/>
+          <AppTextInput placeholder="Name" defaultValue={name} style={{width:"100%"}}/>
           
           <View style={{
             flexDirection: "row",

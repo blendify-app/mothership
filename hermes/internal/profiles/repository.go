@@ -2,10 +2,12 @@ package profiles
 
 import (
 	"context"
+	"log"
 
 	"github.com/blendify-app/mothership/hermes/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Repository interface {
@@ -22,6 +24,16 @@ type repository struct {
 func NewRepository(db *mongo.Client) Repository {
 	envVars, _ := config.LoadConfig()
 	collection := db.Database(envVars.MONGO_DB_NAME).Collection("profile")
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "user_id", Value: -1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := collection.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		log.Printf("%v", err)
+	}
+
 	return &repository{collection}
 }
 
@@ -43,7 +55,7 @@ func (r *repository) Create(ctx context.Context, profile Profile) (*mongo.Insert
 }
 
 func (r *repository) Update(ctx context.Context, profile Profile) (*mongo.UpdateResult, error) {
-	filter := bson.M{"_id": profile.ID}
+	filter := bson.M{"user_id": profile.UserID}
 	update := bson.M{"$set": profile}
 	return r.collection.UpdateOne(ctx, filter, update)
 }

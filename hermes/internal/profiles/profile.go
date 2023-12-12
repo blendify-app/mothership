@@ -3,7 +3,7 @@ package profiles
 const ProfileObject string = "profile"
 
 type Profile struct {
-	ID           string       `json:"id" bson:"_id"`
+	ID           string       `json:"id,omitempty" bson:"_id"`
 	Object       string       `json:"object" bson:"object"`
 	UserID       string       `json:"user_id" bson:"user_id"`
 	Basic        Basic        `json:"basic" bson:"basic"`

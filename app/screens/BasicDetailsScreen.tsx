@@ -50,7 +50,7 @@ const BasicDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
   const postProfileMutation = usePostProfile();
 
   const username = userdetails?.data.name;
-  console.log(userdetails?.data.id)
+  const mongoid = mmkvStorage.set("mongoid", userdetails?.data.profile||"");
 
   return (
     <Formik
@@ -59,14 +59,6 @@ const BasicDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
       onSubmit={(values) => {
         console.log(values);
         postProfileMutation.mutate({
-          id: userdetails?.data.profile,
-          userId: userdetails?.data.id || "",
-          basic: {
-            email: userdetails?.data.email || "", // replace with actual email
-            name:  userdetails?.data.name || "",
-            nickname: "",
-            picture: "" // replace with actual name
-          },
           demographics: {
             nationality: values.nationality,
             dateOfBirth: values.dateOfBirth,

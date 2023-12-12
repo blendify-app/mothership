@@ -12,6 +12,8 @@ import Colors from "../constants/Colors";
 import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
+import { usePostProfile } from "../api/users/usePostUserProfile";
+import { mmkvStorage } from "../lib/mmkv";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Interests">;
 
@@ -32,8 +34,19 @@ const InterestsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
     selectedInterests: string[];
   }
 
+  const postProfileMutation = usePostProfile();
+  const userid = mmkvStorage.getString("userid");
+
   const onSubmit = (values: FormValues) => {
     console.log(values);
+
+    postProfileMutation.mutate({
+      life:{
+        interests: values.selectedInterests,
+      }
+      
+    });
+
     navigate("Languages");
   };
 

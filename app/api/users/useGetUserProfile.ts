@@ -1,21 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, API_METHODS } from '../api-client';
-import { useAuthUser } from './useAuthorizeUser';
-import { mmkvStorage } from '../../lib/mmkv';
+import { Profile } from '../types/profiletypes';
+
+const getProfileFn = async () => {
+  const response = await apiClient({
+    method: API_METHODS.GET,
+    endpoint: 'profiles/me'
+  });
+  return response.json();
+};
 
 export function useGetProfile() {
-  const userId = mmkvStorage.getString("userid")
-
-  return useQuery({
-    queryKey: ['profile', userId],
-    queryFn: async () => {
-      const response = await apiClient({
-        method: API_METHODS.GET,
-        endpoint: `profiles/${userId}`,
-        data: null
-      });
-      const data = await response.json();
-      return data;
-    },
+  const queryResult = useQuery<Profile>({
+    queryKey: ['profile'],
+    queryFn: getProfileFn,
   });
+
+  if (queryResult.isError) {
+    console.error('Failed to fetch profile: ', queryResult.error);
+  }
+
+  return queryResult;
 }

@@ -12,6 +12,8 @@ import Colors from "../constants/Colors";
 import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
+import { usePostProfile } from "../api/users/usePostUserProfile";
+import { mmkvStorage } from "../lib/mmkv";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Languages">;
 
@@ -31,9 +33,18 @@ const LanguagesScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
   interface FormValues {
     selectedLanguages: string[];
   }
+  const postProfileMutation = usePostProfile();
+  const userid = mmkvStorage.getString("userid");
 
   const onSubmit = (values: FormValues) => {
     console.log(values);
+
+    postProfileMutation.mutate({
+      demographics:{
+        languages: values.selectedLanguages,
+      }
+    });
+
     navigate("FinalDetails");
   };
 

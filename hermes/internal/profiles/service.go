@@ -14,7 +14,7 @@ type service struct {
 type Service interface {
 	Get(ctx context.Context, id string) (Profile, error)
 	Create(ctx context.Context, profile Profile) (Profile, error)
-	Update(ctx context.Context, profile Profile) (Profile, error)
+	Update(ctx context.Context, data map[string]interface{}) (Profile, error)
 	Delete(ctx context.Context, id string) (bool, error)
 }
 
@@ -62,15 +62,12 @@ func (s service) Create(ctx context.Context, profile Profile) (Profile, error) {
 	return profile, nil
 }
 
-func (s service) Update(ctx context.Context, profile Profile) (Profile, error) {
-	if err := profile.validate(); err != nil {
-		return Profile{}, err
-	}
-	_, err := s.repo.Update(ctx, profile)
+func (s service) Update(ctx context.Context, data map[string]interface{}) (Profile, error) {
+	_, err := s.repo.Update(ctx, data)
 	if err != nil {
 		return Profile{}, err
 	}
-	return profile, nil
+	return Profile{}, nil
 }
 
 func (s service) Delete(ctx context.Context, id string) (bool, error) {

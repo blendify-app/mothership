@@ -23,24 +23,24 @@ export interface Basic {
   }
   
   export interface Life {
-    occupations: string[];
-    hobbies: string[];
-    fieldsStudied: string[];
-    aspirations: string[];
-    politicalStances: string[];
-    languagesLearnt: string[];
-    challengesFaced: string[];
+    job?: string;
+    company?: string;
+    interests?: string[];
+    education?: string;
+    aspirations?: string[];
+    politicalStances?: string[];
+    challengesFaced?: string[];
   }
   
   export interface Additional {
-    relyOnMeFor: string;
+    relyOnMeFor: string[];
     favoriteTraitsInFriend: string[];
   }
   
   export interface Profile {
     id?: string;
     object?: string;
-    userId: string;
+    userId?: string;
     basic?: Basic;
     demographics?: Demographics;
     personality?: Personality;

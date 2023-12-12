@@ -13,7 +13,7 @@ import (
 type Repository interface {
 	Get(ctx context.Context, id string) (Profile, error)
 	Create(ctx context.Context, profile Profile) (*mongo.InsertOneResult, error)
-	Update(ctx context.Context, profile Profile) (*mongo.UpdateResult, error)
+	Update(ctx context.Context, data map[string]interface{}) (*mongo.UpdateResult, error)
 	Delete(ctx context.Context, id string) (*mongo.DeleteResult, error)
 }
 
@@ -54,9 +54,9 @@ func (r *repository) Create(ctx context.Context, profile Profile) (*mongo.Insert
 	return insertedResult, err
 }
 
-func (r *repository) Update(ctx context.Context, profile Profile) (*mongo.UpdateResult, error) {
-	filter := bson.M{"user_id": profile.UserID}
-	update := bson.M{"$set": profile}
+func (r *repository) Update(ctx context.Context, data map[string]interface{}) (*mongo.UpdateResult, error) {
+	filter := data["filter"].(bson.M)
+	update := data["update"].(bson.M)
 	return r.collection.UpdateOne(ctx, filter, update)
 }
 

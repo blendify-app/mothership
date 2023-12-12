@@ -4,9 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
-	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/utils"
+	"github.com/gin-gonic/gin"
 )
 
 func ProfileRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
@@ -62,20 +65,23 @@ func updateProfile(c *gin.Context, profileRepository Repository) {
 		return
 	}
 
-	var requestData Profile
-
-	// Bind JSON request body to the RequestData struct
+	var requestData map[string]interface{}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Malformed request"})
 		return
 	}
 
-	requestData.UserID = customClaims.Sub
-
+	userID := customClaims.Sub
 	log.Printf("Request data: %v", requestData)
 
-	profileService := NewService(profileRepository)
-	_, err = profileService.Update(c.Request.Context(), requestData)
+	flattenedData := utils.Flatten(requestData)
+
+	updateData := map[string]interface{}{
+		"filter": bson.M{"user_id": userID},
+		"update": bson.M{"$set": flattenedData},
+	}
+
+	_, err = profileRepository.Update(c.Request.Context(), updateData)
 	if err != nil {
 		log.Printf("%v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -85,6 +91,6 @@ func updateProfile(c *gin.Context, profileRepository Repository) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Profile edited succesfully",
+		"message": "Profile edited successfully",
 	})
 }

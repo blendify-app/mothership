@@ -3,7 +3,7 @@ console.log("api client", mmkvStorage)
 export type ApiClientOptions = {
   method: API_METHODS;
   endpoint: string;
-  data: any;
+  data?: any;
 };
 
 export enum API_METHODS {

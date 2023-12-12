@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func UserRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
+func UserRoutes(sg *gin.RouterGroup, db *mongo.Database) {
 	usersGroup := sg.Group("/users")
 	{
 		usersGroup.POST("/authorize", func(c *gin.Context) {

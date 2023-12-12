@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blend Chat Client</title>
+    <style>
+      #chatbox {
+        height: 300px;
+        width: 300px;
+        border: 1px solid black;
+        overflow: auto;
+      }
+      #message {
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chatbox"></div>
+    <input id="message" type="text" />
+    <button id="send">Send</button>
+
+    <script>
+      const token = "";
+      const socket = new WebSocket(`ws://0.0.0.0:8080/ws?token=${token}`);
+
+      socket.addEventListener("open", (event) => {
+        console.log("Connected to the WebSocket server");
+      });
+
+      socket.addEventListener("message", (event) => {
+        const chatbox = document.getElementById("chatbox");
+        const message = document.createElement("p");
+        message.textContent = event.data;
+        chatbox.appendChild(message);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      });
+
+      socket.addEventListener("error", (error) => {
+        console.log("WebSocket error: " + error);
+      });
+
+      socket.addEventListener("close", (event) => {
+        console.log("WebSocket connection closed");
+      });
+
+      document.getElementById("send").addEventListener("click", () => {
+        const message = document.getElementById("message").value;
+        socket.send(message);
+        document.getElementById("message").value = "";
+      });
+    </script>
+  </body>
+</html>

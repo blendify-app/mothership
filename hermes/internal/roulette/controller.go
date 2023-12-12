@@ -1,69 +1,74 @@
 package roulette
 
 import (
-	"fmt"
-	"net/http"
-	"time"
+	"context"
+	"log"
 
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/ws"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RouletteRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
+func RouletteRoutes(sg *gin.RouterGroup, db *mongo.Database, hub *ws.Hub) {
 	rouletteGroup := sg.Group("/roulette")
 	{
-		rouletteGroup.POST("/join", func(c *gin.Context) {
+		rouletteGroup.GET("/join", func(c *gin.Context) {
 			rouletteRepository := NewRepository(db.Client())
-			join(c, rouletteRepository)
+			join(c, hub, rouletteRepository)
 		})
 	}
 }
 
-// TODO
-func join(c *gin.Context, rouletteRepository Repository) {
-	customClaims, err := middleware.GetCustomClaims(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to join roulette pool",
-		})
-		return
-	}
+func join(c *gin.Context, hub *ws.Hub, rouletteRepository Repository) {
+	// customClaims, err := middleware.GetCustomClaims(c)
+	// if err != nil {
+	// 	log.Printf("hermes_error: %v", err)
+	// 	c.JSON(http.StatusInternalServerError, gin.H{
+	// 		"error": "Failed to join roulette pool",
+	// 	})
+	// 	return
+	// }
 
-	rouletteService := NewService(rouletteRepository)
+	// Upgrade to websocket connection
+	// ws.ServeWs(hub, c, customClaims)
 
-	newRouletteParticipant := CreateRouletteSessionRequest{
-		UserID: customClaims.Sub,
-	}
+	// rouletteService := NewService(rouletteRepository)
+	// oid := primitive.NewObjectID()
+	// rouletteParticipant := Roulette{
+	// 	ID:     oid.Hex(),
+	// 	Object: RouletteObject,
+	// 	UserID: customClaims.Sub,
+	// }
 
-	_, err = rouletteService.Create(c.Request.Context(), newRouletteParticipant)
-	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			c.JSON(http.StatusOK, gin.H{"message": "User already in the roulette pool"})
-			return
-		}
+	// _, err = rouletteService.Create(c.Request.Context(), rouletteParticipant)
+	// if err != nil {
+	// 	if mongo.IsDuplicateKeyError(err) {
+	// 		c.JSON(http.StatusOK, gin.H{"message": "User already in the roulette pool"})
+	// 		return
+	// 	}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to join roulette pool"})
-		return
-	}
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to join roulette pool"})
+	// 	return
+	// }
 
-	// async method to start searching for a match
-	// implement long polling with a timeout for a match
+	// // Create a new context for the findMatch goroutine
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
+	// done := make(chan struct{})
+	// // Async method to start searching for a match
+	// go findMatch(ctx, rouletteRepository, customClaims, done)
 
-	go func() {
-		time.Sleep(10 * time.Second)
-		fmt.Println(("match found!"))
-	}()
+	// // Long-polling mechanism with timeout
+	// select {
+	// case <-done:
+	// 	log.Printf("FindRandom is done")
+	// 	// Handle the case when FindRandom is done
+	// 	return
+	// }
+}
 
-	// Long-polling mechanism with timeout
-	select {
-	case <-time.After(5 * time.Second): // Set a timeout (e.g., 30 seconds)
-		// Timeout occurred, no match found yet
-		c.JSON(http.StatusOK, gin.H{"message": "No match found yet, keep waiting"})
-	case <-c.Request.Context().Done():
-		// Client disconnected or canceled the request
-		return
-	}
-
-	//c.JSON(http.StatusInternalServerError, gin.H{"x": "x"})
+func findMatch(ctx context.Context, rouletteRepository Repository, claims *middleware.CustomClaims, done chan<- struct{}) {
+	log.Printf("finding a match for: %v", claims.Sub)
+	rouletteRepository.FindRandom(ctx, claims.Sub, done)
 }

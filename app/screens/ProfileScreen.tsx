@@ -14,6 +14,20 @@ import { useGetProfile } from "../api/users/useGetUserProfile";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
+export function calculateAge(dob: string) {
+  const [day, month, year] = dob.split("-");
+  const dateObject = new Date(`${year}-${month}-${day}`);
+
+  const today = new Date();
+  const birthDate = new Date(dateObject);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
 
     const buttons = ["View your Profile", "Settings", "Digital Safety & Wellbeing", "Privacy Policy & Code of Conduct"]
@@ -39,21 +53,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
       const data = getProf.data
       console.log(data)
 
-      function calculateAge(dob: Date) {
-        const today = new Date();
-        const birthDate = new Date(dob);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
-        }
-        return age;
-      }
+      
 
-      const datestr = data?.demographics?.dateOfBirth || ""
-      const [day, month, year] = datestr.split("-");
-      const dateObject = new Date(`${year}-${month}-${day}`);
-      console.log(dateObject);
+
 
     return (
         <SafeAreaView>
@@ -66,7 +68,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
               
               <View style={styles.details}>
                 <Text style={styles.detailsname}>{data?.basic?.name}</Text>
-                <Text style={styles.detailsage}>{calculateAge(dateObject)}</Text>
+                <Text style={styles.detailsage}>{calculateAge(data?.demographics?.dateOfBirth || "")}</Text>
               </View>
 
               <Text style={styles.pronouns}>{data?.demographics?.pronouns}</Text>

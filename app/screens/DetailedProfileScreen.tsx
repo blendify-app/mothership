@@ -22,6 +22,7 @@ import Spacing from "../constants/Spacing";
 import Layout from "../constants/Layout";
 import { useGetProfile } from "../api/users/useGetUserProfile";
 import { Profile } from "../api/types/profiletypes";
+import { calculateAge } from "./ProfileScreen";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DetailedProfile">;
 
@@ -37,17 +38,6 @@ const DetailedProfileScreen: React.FC<Props> = ({
 
   const getProf = useGetProfile();
   const data = getProf.data
-
-  function calculateAge(dob: Date) {
-    const today = new Date();
-    const birthDate = new Date(dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  }
 
   const datestr = data?.demographics?.dateOfBirth || ""
   const [day, month, year] = datestr.split("-");
@@ -81,7 +71,7 @@ const DetailedProfileScreen: React.FC<Props> = ({
 
           <View style={styles.details}>
             <Text style={styles.detailsname}>{data?.basic?.name}</Text>
-            <Text style={styles.detailsage}>{calculateAge(dateObject)}</Text>
+            <Text style={styles.detailsage}>{calculateAge(data?.demographics?.dateOfBirth || "")}</Text>
           </View>
 
           <Text style={styles.pronouns}>{data?.demographics?.pronouns}</Text>

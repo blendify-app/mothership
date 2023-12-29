@@ -19,73 +19,54 @@ import { RootStackParamList } from "../types";
 import { auth0config } from "../config/auth0";
 import Auth0 from "react-native-auth0";
 import { MMKV } from "react-native-mmkv";
+import { useMutation } from "@tanstack/react-query";
+import { mmkvStorage } from "../lib/mmkv";
+import { useAuthUser } from "../api";
 // import jwt from "jsonwebtoken";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 const auth0 = new Auth0(auth0config);
 
-export const storage = new MMKV()
-
-
-const handleLogin = async ( navigation: any) => {
-  try {
-    const credentials = await auth0.webAuth.authorize({
-      scope: "openid email profile offline_access",
-      connection: "google-oauth2"
-    });
-    const idToken = credentials.idToken;
-    const refToken = credentials.refreshToken || "";
-    const expiry = credentials.expiresAt;
-
-
-    console.log(credentials);
-    
-    storage.set("authToken", idToken)
-    storage.set("refreshToken", refToken)
-    storage.set("expiry", expiry)
-
-
-    sendIdTokenToBackend(idToken, navigation)
-  } catch (error) {
-    alert("Error: " + error);
-  }
-}
-
-const sendIdTokenToBackend = async (idToken: string, navigation: any) => {
-  try {
-    const response = await fetch('http://192.168.0.152:8080/v1/users/authorize', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
-      },
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log(result)
-
-      if (result.success) {
-        console.log('Authorization successful. Message:', result.message);
-        navigation.navigate("Basic")
-        
-      } else {
-        console.warn('Authorization failed. Message:', result.message);
-        Alert.alert('Authorization Failed', result.message);
-      }
-    } else {
-      console.error('Error in backend response:', response.statusText);
-      Alert.alert('Server Error', 'Please try again later.');
-    }
-  } catch (error) {
-    console.error('Error sending IdToken to backend:', error);
-    Alert.alert('Network Error', 'Please check your internet connection.');
-  }
-};
-
-
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+
+  const authUser = useAuthUser()
+
+  const handleLogin = async () => {
+    try {
+      const credentials = await auth0.webAuth.authorize({
+        scope: "openid email profile offline_access",
+        connection: "google-oauth2"
+      });
+      const idToken = credentials.idToken;
+      const refToken = credentials.refreshToken || "";
+      const expiry = credentials.expiresAt;
+  
+  
+      console.log(credentials);
+      
+      mmkvStorage.set("authToken", idToken);
+      mmkvStorage.set("refreshToken", refToken);
+      mmkvStorage.set("expiry", expiry);
+  
+  
+      sendIdTokenToBackend()
+    } catch (error) {
+      alert("Error: " + error);
+    }
+  }
+
+  const sendIdTokenToBackend = async () => {
+    try {
+      await authUser.mutateAsync();
+      navigation.navigate("Basic");
+      
+    } catch (error) {
+      console.error('Error sending IdToken to backend:', error);
+      Alert.alert('Network Error', 'Please check your internet connection.');
+    }
+  };
+
   return (
     <Auth0Provider domain={auth0config.domain} clientId={auth0config.clientId}>
     <SafeAreaView>
@@ -131,7 +112,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             marginVertical: Spacing * 3,
           }}
         >
-          <AppTouchableOpacity text="Sign In with Google" dark onPress={() => handleLogin(navigation)}/>
+          <AppTouchableOpacity text="Sign In with Google" dark onPress={() => handleLogin()}/>
         </View>
       </View>
     </SafeAreaView>

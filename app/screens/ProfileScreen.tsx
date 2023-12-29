@@ -10,8 +10,23 @@ import Colors from "../constants/Colors";
 import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
+import { useGetProfile } from "../api/users/useGetUserProfile";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
+
+export function calculateAge(dob: string) {
+  const [day, month, year] = dob.split("-");
+  const dateObject = new Date(`${year}-${month}-${day}`);
+
+  const today = new Date();
+  const birthDate = new Date(dateObject);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
 
@@ -34,6 +49,14 @@ const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
         }
       };
 
+      const getProf = useGetProfile();
+      const data = getProf.data
+      console.log(data)
+
+      
+
+
+
     return (
         <SafeAreaView>
           <ScrollView>
@@ -44,11 +67,11 @@ const ProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
               <Image style={styles.avatar} source={require('../assets/images/johnnydepp.jpg')}/>
               
               <View style={styles.details}>
-                <Text style={styles.detailsname}>Johnny Depp</Text>
-                <Text style={styles.detailsage}>33</Text>
+                <Text style={styles.detailsname}>{data?.basic?.name}</Text>
+                <Text style={styles.detailsage}>{calculateAge(data?.demographics?.dateOfBirth || "")}</Text>
               </View>
 
-              <Text style={styles.pronouns}>(he/him)</Text>
+              <Text style={styles.pronouns}>{data?.demographics?.pronouns}</Text>
 
               {
                 Object.entries(buttons).map(([index, options]) => {

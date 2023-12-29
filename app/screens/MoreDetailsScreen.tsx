@@ -21,6 +21,8 @@ import Layout from "../constants/Layout";
 import RadioButtonGroup from "../components/RadioButtonGroup";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { usePostProfile } from "../api/users/usePostUserProfile";
+import { mmkvStorage } from "../lib/mmkv";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MoreDetails">;
 
@@ -89,8 +91,21 @@ const MoreDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
     Zodiac: zodiacOptions,
   };
 
+  const postProfileMutation = usePostProfile();
+  const userid = mmkvStorage.getString("userid")
+
   const onSubmit = (values: FormValues) => {
     console.log(values);
+    postProfileMutation.mutate({
+      demographics: {
+        gender: values.Gender,
+        pronouns: values.Pronoun,
+        sexuality: values.Sexuality,
+        religion: values.Religion,
+        starsign: values.Zodiac,
+      }
+
+    });
     navigate("Education")
   };
 

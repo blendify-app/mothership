@@ -20,6 +20,9 @@ import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
 import Layout from "../constants/Layout";
+import { useGetProfile } from "../api/users/useGetUserProfile";
+import { Profile } from "../api/types/profiletypes";
+import { calculateAge } from "./ProfileScreen";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DetailedProfile">;
 
@@ -33,16 +36,26 @@ const DetailedProfileScreen: React.FC<Props> = ({
     </View>
   );
 
-  const about = [
-    "Male",
-    "He/Him",
-    "Hindu",
-    "Straight",
-    "Libra",
-    "BigSlayyyyyy",
-  ];
-  const workLang = ["Actor/Model", "Film Studies", "English, Spanish, Hebrew"];
-  const selectedInterests = ["Clubbing", "Videos", "Coffee"];
+  const getProf = useGetProfile();
+  const data = getProf.data
+
+  const datestr = data?.demographics?.dateOfBirth || ""
+  const [day, month, year] = datestr.split("-");
+  const dateObject = new Date(`${year}-${month}-${day}`);
+  console.log(dateObject);
+  
+
+  const demographics = [
+    data?.demographics?.gender,
+    data?.demographics?.pronouns,
+    data?.demographics?.religion,
+    data?.demographics?.sexuality,
+    data?.demographics?.starsign,
+    data?.life?.company
+  ].filter((item): item is string => item !== undefined);
+
+  const workLang = [data?.life?.job, data?.life?.education, (data?.demographics?.languages ?? []).join(', ')];
+  const selectedInterests = data?.life?.interests ?? [];
   return (
     <SafeAreaView>
       <ScrollView>
@@ -57,20 +70,20 @@ const DetailedProfileScreen: React.FC<Props> = ({
           />
 
           <View style={styles.details}>
-            <Text style={styles.detailsname}>Johnny Depp</Text>
-            <Text style={styles.detailsage}>33</Text>
+            <Text style={styles.detailsname}>{data?.basic?.name}</Text>
+            <Text style={styles.detailsage}>{calculateAge(data?.demographics?.dateOfBirth || "")}</Text>
           </View>
 
-          <Text style={styles.pronouns}>(he/him)</Text>
+          <Text style={styles.pronouns}>{data?.demographics?.pronouns}</Text>
 
           <View style={styles.profstyle}>
             <Text style={styles.rely}>
               Rely on me for{"\n"}
-              <Text style={styles.relysubtext}>Weed</Text>
+              <Text style={styles.relysubtext}>{data?.additional?.relyOnMeFor.join(", ")}</Text>
             </Text>
             <Text style={styles.rely}>
               Favorite Traits{"\n"}
-              <Text style={styles.relysubtext}>Shit on my bed</Text>
+              <Text style={styles.relysubtext}>{data?.additional?.favoriteTraitsInFriend.join(", ")}</Text>
             </Text>
           </View>
 
@@ -79,7 +92,7 @@ const DetailedProfileScreen: React.FC<Props> = ({
           <FlatList
             showsHorizontalScrollIndicator={false}
             style={styles.about}
-            data={about}
+            data={demographics}
             renderItem={renderItem}
             keyExtractor={(item) => item}
             horizontal
@@ -117,6 +130,10 @@ const DetailedProfileScreen: React.FC<Props> = ({
             style={styles.picture}
             source={require("../assets/images/jdep3.jpg")}
           />
+
+          <View style={{marginTop: Spacing * 4}}>
+
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -162,7 +179,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.small,
     borderWidth: 1,
     borderRadius: Spacing,
-    marginHorizontal: Spacing * 2,
+    marginHorizontal: Spacing/2,
     paddingVertical: Spacing,
     paddingRight: Spacing * 4,
     paddingLeft: Spacing,
@@ -218,7 +235,7 @@ const styles = StyleSheet.create({
   },
   about: {
     backgroundColor: "#D9D9D9",
-    padding: Spacing,
+    paddingVertical: Spacing,
     marginBottom: Spacing,
     borderRadius: Spacing,
   },

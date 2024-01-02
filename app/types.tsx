@@ -25,6 +25,8 @@ export type RootStackParamList = {
     Safety: undefined;
     Privacy: undefined;
     Settings: undefined;
+    Roulette: undefined;
+    Blendify: undefined;
 
 };
 

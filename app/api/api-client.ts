@@ -15,7 +15,7 @@ export enum API_METHODS {
     OPTIONS = "OPTIONS",
   }
 
-const BASE_URL = "http://192.168.0.152:8080/v1/"; // TODO: change this to env var
+const BASE_URL = "http://192.168.0.153:8080/v1/"; // TODO: change this to env var
 const auth = mmkvStorage.getString("authToken");
 
 

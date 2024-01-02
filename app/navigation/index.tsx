@@ -24,6 +24,8 @@ import DetailedProfileScreen from "../screens/DetailedProfileScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
 import DigitalSafetyScreen from "../screens/DigitalSafetyScreen";
+import RouletteScreen from "../screens/RouletteScreen";
+import BlendifyScreen from "../screens/BlendifyScreen";
 
 const theme = {
     ...DefaultTheme,
@@ -72,6 +74,9 @@ function RootNavigator() {
             <Stack.Screen name="Settings" component={SettingsScreen}/>
             <Stack.Screen name="Privacy" component={PrivacyPolicyScreen}/>
             <Stack.Screen name="Safety" component={DigitalSafetyScreen}/>
+            <Stack.Screen name="Roulette" component={RouletteScreen}/>
+            <Stack.Screen name="Blendify" component={BlendifyScreen}/>
+
         </Stack.Navigator>
     );
 }

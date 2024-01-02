@@ -1,4 +1,6 @@
- import { mmkvStorage } from "../lib/mmkv";
+import { mmkvStorage } from "../lib/mmkv";
+import { BASE_URL } from "@env";
+
 console.log("api client", mmkvStorage)
 export type ApiClientOptions = {
   method: API_METHODS;
@@ -15,7 +17,6 @@ export enum API_METHODS {
     OPTIONS = "OPTIONS",
   }
 
-const BASE_URL = "http://192.168.0.152:8080/v1/"; // TODO: change this to env var
 const auth = mmkvStorage.getString("authToken");
 
 

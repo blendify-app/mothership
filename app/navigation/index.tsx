@@ -76,6 +76,7 @@ function RootNavigator() {
             <Stack.Screen name="Safety" component={DigitalSafetyScreen}/>
             <Stack.Screen name="Roulette" component={RouletteScreen}/>
             <Stack.Screen name="Blendify" component={BlendifyScreen}/>
+
         </Stack.Navigator>
     );
 }

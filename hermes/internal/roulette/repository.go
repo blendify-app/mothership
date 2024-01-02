@@ -62,7 +62,7 @@ func (r *repository) Delete(ctx context.Context, id string) (*mongo.DeleteResult
 }
 
 func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- struct{}) error {
-	// Create a pipeline that excludes a certain user and randomly selects 1 user
+	// Create a pipeline that excludes a certain user and randomly selects one user
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{{Key: "user_id", Value: bson.D{{Key: "$ne", Value: userID}}}}}},
 		{{Key: "$sample", Value: bson.D{{Key: "size", Value: 1}}}},

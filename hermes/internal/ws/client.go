@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -64,9 +64,11 @@ func (c *Client) readPump() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
+
 	c.conn.SetReadLimit(maxMessageSize)
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
@@ -75,8 +77,34 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+
+		var msg Message
+		err = json.Unmarshal(message, &msg)
+		if err != nil {
+			log.Printf("readPump message error: %v", err)
+			// Handle JSON unmarshal error
+			continue
+		}
+		log.Printf("msg: %v", msg)
+
+		switch msg.Type {
+		case JoinRoulette:
+			// Handle joining the roulette pool
+			log.Printf("%v is joining roulette", c.id)
+
+			c.hub.broadcast <- message
+			c.hub.broadcast <- []byte("u in the pol")
+		case "join_room":
+			// Handle joining a specific room
+		case "reconnect":
+			// Handle reconnecting to the chat
+		case "send_message":
+			// Handle sending a message to another person in the room
+		default:
+			// Handle unknown message types
+		}
+		// message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		// c.hub.broadcast <- message
 	}
 }
 
@@ -140,7 +168,7 @@ func ServeWS(hub *Hub, c *gin.Context, envVars *config.EnvVars) {
 		return
 	}
 
-	client := &Client{hub: hub, id: "x", conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, id: claims.Sub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 	client.send <- []byte("hello")
 

@@ -20,6 +20,25 @@ type Hub struct {
 	rooms map[string]map[*Client]bool
 }
 
+type MessageType string
+
+type Message struct {
+	Type      MessageType `json:"type"`
+	Content   string      `json:"content"`
+	Room      string      `json:"room"`
+	Timestamp int64       `json:"timestamp"`
+	Error     string      `json:"error"`
+}
+
+const (
+	JoinRoulette  MessageType = "join_roulette"
+	LeaveRoulette MessageType = "leave_roulette"
+	JoinRoom      MessageType = "join_room"
+	LeaveRoom     MessageType = "leave_room"
+	Reconnect     MessageType = "reconnect"
+	SendMessage   MessageType = "send_message"
+)
+
 func NewHub() *Hub {
 	return &Hub{
 		broadcast:  make(chan []byte),
@@ -35,17 +54,18 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-			log.Printf("hub clients: %v", h.clients)
+			log.Printf("hub:register clients: %v", h.clients)
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
-				log.Printf("hub clients: %v", h.clients)
+				log.Printf("hub:unregister clients: %v", h.clients)
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
 				select {
 				case client.send <- message:
+					log.Printf("sending")
 				default:
 					close(client.send)
 					delete(h.clients, client)

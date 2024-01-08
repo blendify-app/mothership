@@ -27,19 +27,16 @@ type CustomClaims struct {
 }
 
 func (c *CustomClaims) Validate(ctx context.Context) error {
+	// Perform custom validation here (Auth provider takes care of this, I think)
 	return nil
 }
 
-func Setup(r *gin.Engine, db *mongo.Database) {
-	envVars, err := config.LoadConfig()
-	if err != nil {
-		fmt.Printf("Hermes error: %v", err.Error())
-	}
-
+// Create a new JWT validator using the provided environment variables
+func newJWTValidator(envVars *config.EnvVars) *validator.Validator {
 	issuerURL, err := url.Parse("https://" + envVars.AUTH0_DOMAIN + "/")
 	if err != nil {
 		log.Printf("Failed to parse the issuer URL: %v", err)
-		return
+		return nil
 	}
 
 	provider := jwks.NewCachingProvider(issuerURL, time.Duration(5*time.Minute))
@@ -56,16 +53,13 @@ func Setup(r *gin.Engine, db *mongo.Database) {
 	)
 	if err != nil {
 		log.Printf("Failed to set up the jwt validator: %v", err)
-		return
+		return nil
 	}
 
-	middleware := jwtmiddleware.New(jwtValidator.ValidateToken)
-
-	r.Use(cors.Default())
-	r.Use(adapter.Wrap(middleware.CheckJWT))
-	r.Use(ExtractJWTClaims())
+	return jwtValidator
 }
 
+// ExtractJWTClaims returns a middleware that extracts JWT claims from the request context
 func ExtractJWTClaims() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := c.Request.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
@@ -83,6 +77,7 @@ func ExtractJWTClaims() gin.HandlerFunc {
 	}
 }
 
+// GetCustomClaims retrieves custom claims from the context
 func GetCustomClaims(c *gin.Context) (*CustomClaims, error) {
 	customClaims_, ok := c.Get("customClaims")
 	if !ok {
@@ -90,4 +85,36 @@ func GetCustomClaims(c *gin.Context) (*CustomClaims, error) {
 	}
 
 	return customClaims_.(*CustomClaims), nil
+}
+
+// AuthorizeWSConnection authorizes a websocket connection using JWT token
+func AuthorizeWSConnection(c *gin.Context, envVars *config.EnvVars) *CustomClaims {
+	token := c.Query("token")
+	jwtValidator := newJWTValidator(envVars)
+
+	validatedClaims, err := jwtValidator.ValidateToken(c, token)
+	if err != nil {
+		log.Printf("%v", err)
+		return nil
+	}
+
+	customClaims, ok := (validatedClaims.(*validator.ValidatedClaims)).CustomClaims.(*CustomClaims)
+	if !ok {
+		log.Println("Failed to extract custom claims from token")
+		return nil
+	}
+
+	return customClaims
+}
+
+// Setup configures middleware for the Gin engine
+func Setup(r *gin.Engine, db *mongo.Database, envVars *config.EnvVars) {
+	log.Printf("hermes: setting up middleware")
+
+	jwtValidator := newJWTValidator(envVars)
+	middleware := jwtmiddleware.New(jwtValidator.ValidateToken)
+
+	r.Use(cors.Default())
+	r.Use(adapter.Wrap(middleware.CheckJWT))
+	r.Use(ExtractJWTClaims())
 }

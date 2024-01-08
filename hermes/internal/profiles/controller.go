@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ProfileRoutes(r *gin.Engine, sg *gin.RouterGroup, db *mongo.Database) {
+func ProfileRoutes(sg *gin.RouterGroup, db *mongo.Database) {
 	profilesGroup := sg.Group("/profiles")
 	{
 		profileRepository := NewRepository(db.Client())

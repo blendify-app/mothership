@@ -2,10 +2,8 @@ package roulette
 
 import (
 	"context"
-	"errors"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type service struct {
@@ -14,16 +12,12 @@ type service struct {
 
 type Service interface {
 	Get(ctx context.Context, id string) (Roulette, error)
-	Create(ctx context.Context, input CreateRouletteSessionRequest) (Roulette, error)
+	Create(ctx context.Context, input Roulette) (Roulette, error)
 	Delete(ctx context.Context, id string) (bool, error)
+	FindMatch(ctx context.Context, rouletteRepository Repository, done chan<- struct{}, id string)
 }
 
-type CreateRouletteSessionRequest struct {
-	ID     string `json:"_id,omitempty" bson:"_id,omitempty"`
-	UserID string `json:"user_id,omitempty" bson:"user_id,omitempty"`
-}
-
-func (m CreateRouletteSessionRequest) validate() error {
+func (m Roulette) validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.UserID, validation.Required),
 	)
@@ -42,26 +36,17 @@ func (s service) Get(ctx context.Context, id string) (Roulette, error) {
 	return roulette, nil
 }
 
-func (s service) Create(ctx context.Context, req CreateRouletteSessionRequest) (Roulette, error) {
-	if err := req.validate(); err != nil {
+func (s service) Create(ctx context.Context, roulette Roulette) (Roulette, error) {
+	if err := roulette.validate(); err != nil {
 		return Roulette{}, err
 	}
 
-	result, err := s.repo.Create(ctx, Roulette{
-		UserID: req.UserID,
-	})
+	_, err := s.repo.Create(ctx, roulette)
 	if err != nil {
 		return Roulette{}, err
 	}
 
-	objID, ok := result.InsertedID.(primitive.ObjectID)
-	if !ok {
-		return Roulette{}, errors.New("cannot convert InsertedID to ObjectID")
-	}
-
-	return Roulette{
-		ID: objID.Hex(),
-	}, nil
+	return roulette, nil
 }
 
 func (s service) Delete(ctx context.Context, id string) (bool, error) {
@@ -71,4 +56,8 @@ func (s service) Delete(ctx context.Context, id string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (s service) FindMatch(ctx context.Context, rouletteRepository Repository, done chan<- struct{}, id string) {
+	rouletteRepository.FindRandom(ctx, id, done)
 }

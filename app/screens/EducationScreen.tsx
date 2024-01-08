@@ -23,6 +23,8 @@ import RadioButtonGroup from "../components/RadioButtonGroup";
 import OptionButton from "../components/OptionButton";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { mmkvStorage } from "../lib/mmkv";
+import { usePostProfile } from "../api/users/usePostUserProfile";
 
 const validationSchema = Yup.object().shape({
   education: Yup.string().required("Education is a required field"),
@@ -64,8 +66,18 @@ const EducationScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
         workPreferNotToSay: boolean,
     }
 
+    const postProfileMutation = usePostProfile();
+    const userid = mmkvStorage.getString("userid");
+
     const onSubmit = (values: FormValues) => {
         console.log(values);
+        postProfileMutation.mutate({
+          life: {
+            education: values.education,
+            job: values.work.job,
+            company: values.work.company,
+          }
+        })
         navigate("Interests");
       };
 

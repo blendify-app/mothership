@@ -3,7 +3,7 @@ package profiles
 const ProfileObject string = "profile"
 
 type Profile struct {
-	ID           string       `json:"id" bson:"_id"`
+	ID           string       `json:"id,omitempty" bson:"_id"`
 	Object       string       `json:"object" bson:"object"`
 	UserID       string       `json:"user_id" bson:"user_id"`
 	Timestamp    string       `json:"time" bson:"time"`
@@ -39,16 +39,16 @@ type Personality struct {
 }
 
 type Life struct {
-	Occupations      []string `json:"occupations" bson:"occupations"`
-	Hobbies          []string `json:"hobbies" bson:"hobbies"`
-	FieldsStudied    []string `json:"fieldsStudied" bson:"fieldsStudied"`
+	Job              string   `json:"job" bson:"job"`
+	Company          string   `json:"company" bson:"company"`
+	Interests        []string `json:"interests" bson:"interests"`
+	Education        string   `json:"education" bson:"education"`
 	Aspirations      []string `json:"aspirations" bson:"aspirations"`
 	PoliticalStances []string `json:"politicalStances" bson:"politicalStances"`
-	LanguagesLearnt  []string `json:"languagesLearnt" bson:"languagesLearnt"`
 	ChallengesFaced  []string `json:"challengesFaced" bson:"challengesFaced"`
 }
 
 type Additional struct {
-	RelyOnMeFor            string   `json:"relyOnMeFor" bson:"relyOnMeFor"`
+	RelyOnMeFor            []string `json:"relyOnMeFor" bson:"relyOnMeFor"`
 	FavoriteTraitsInFriend []string `json:"favoriteTraitsInFriend" bson:"favoriteTraitsInFriend"`
 }

@@ -14,6 +14,7 @@ import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
 import OptionButton from "../components/OptionButton";
 
+
 type Props = NativeStackScreenProps<RootStackParamList, "Modes">;
 
 const ModesScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
@@ -25,7 +26,7 @@ const ModesScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
               <Text style={styles.subtitle}>Pick a mode and match!</Text>
               <Text style={styles.description}>Select how a friend is found by choosing a mode. Once you’re matched, your friend will be in one of your Chats!</Text>
 
-              <TouchableOpacity style={styles.mode}>
+              <TouchableOpacity style={styles.mode} onPress={() => navigate("Blendify")}>
                 <Text style={styles.modetext}>
                   Blendify
                 </Text>
@@ -34,7 +35,7 @@ const ModesScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.mode}>
+              <TouchableOpacity style={styles.mode} onPress={() => navigate("Roulette")}>
                 <Text style={styles.modetext}>
                   Roulette
                 </Text>

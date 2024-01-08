@@ -3,16 +3,19 @@ package profiles
 import (
 	"context"
 	"time"
+	"log"
+
 
 	"github.com/blendify-app/mothership/hermes/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Repository interface {
 	Get(ctx context.Context, id string) (Profile, error)
 	Create(ctx context.Context, profile Profile) (*mongo.InsertOneResult, error)
-	Update(ctx context.Context, profile Profile) (*mongo.UpdateResult, error)
+	Update(ctx context.Context, data map[string]interface{}) (*mongo.UpdateResult, error)
 	Delete(ctx context.Context, id string) (*mongo.DeleteResult, error)
 }
 
@@ -23,6 +26,16 @@ type repository struct {
 func NewRepository(db *mongo.Client) Repository {
 	envVars, _ := config.LoadConfig()
 	collection := db.Database(envVars.MONGO_DB_NAME).Collection("profile")
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "user_id", Value: -1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := collection.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		log.Printf("%v", err)
+	}
+
 	return &repository{collection}
 }
 
@@ -44,9 +57,9 @@ func (r *repository) Create(ctx context.Context, profile Profile) (*mongo.Insert
 	return insertedResult, err
 }
 
-func (r *repository) Update(ctx context.Context, profile Profile) (*mongo.UpdateResult, error) {
-	filter := bson.M{"_id": profile.ID}
-	update := bson.M{"$set": profile}
+func (r *repository) Update(ctx context.Context, data map[string]interface{}) (*mongo.UpdateResult, error) {
+	filter := data["filter"].(bson.M)
+	update := data["update"].(bson.M)
 	return r.collection.UpdateOne(ctx, filter, update)
 }
 

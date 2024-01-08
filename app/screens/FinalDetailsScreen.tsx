@@ -12,6 +12,8 @@ import Colors from "../constants/Colors";
 import Font from "../constants/Font";
 import FontSize from "../constants/FontSize";
 import Spacing from "../constants/Spacing";
+import { usePostProfile } from "../api/users/usePostUserProfile";
+import { mmkvStorage } from "../lib/mmkv";
 
 type Props = NativeStackScreenProps<RootStackParamList, "FinalDetails">;
 
@@ -27,9 +29,20 @@ const FinalDetailsScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
         favTraits: string[];
     };
 
+    const postProfileMutation = usePostProfile();
+    const userid = mmkvStorage.getString("userid");
+    
     const onSubmit = (values: FormValues) => {
-        console.log(values);
-        navigate("Integrations");
+      console.log(values);
+  
+      postProfileMutation.mutate({
+        additional: {
+        relyOnMeFor: values.rely,
+        favoriteTraitsInFriend: values.favTraits,
+        }
+      });
+  
+      navigate("Integrations");
     };
 
     const validationSchema = Yup.object().shape({

@@ -6,6 +6,7 @@ type Profile struct {
 	ID           string       `json:"id" bson:"_id"`
 	Object       string       `json:"object" bson:"object"`
 	UserID       string       `json:"user_id" bson:"user_id"`
+	Timestamp    string       `json:"time" bson:"time"`
 	Basic        Basic        `json:"basic" bson:"basic"`
 	Demographics Demographics `json:"demographics" bson:"demographics"`
 	Personality  Personality  `json:"personality" bson:"personality"`

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/blendify-app/mothership/hermes/config"
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/roulette"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -91,7 +93,15 @@ func (c *Client) readPump() {
 		case JoinRoulette:
 			// Handle joining the roulette pool
 			log.Printf("%v is joining roulette", c.id)
-
+			newRouletteParticipant := &roulette.Roulette{
+				UserID: c.id,
+			}
+			_, err := c.hub.roulette.Create(context.TODO(), *newRouletteParticipant)
+			if err != nil {
+				log.Printf("%v", err)
+			} else {
+				log.Printf("user added successfully to the pool")
+			}
 			c.hub.broadcast <- message
 			c.hub.broadcast <- []byte("u in the pol")
 		case "join_room":

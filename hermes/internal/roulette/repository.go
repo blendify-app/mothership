@@ -3,6 +3,7 @@ package roulette
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/blendify-app/mothership/hermes/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -46,6 +47,7 @@ func (r *repository) Get(ctx context.Context, id string) (Roulette, error) {
 }
 
 func (r *repository) Create(ctx context.Context, roulette Roulette) (*mongo.InsertOneResult, error) {
+	roulette.Timestamp = time.Now().Format(time.RFC3339)
 	insertedResult, err := r.collection.InsertOne(ctx, roulette)
 	return insertedResult, err
 }

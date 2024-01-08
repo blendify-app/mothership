@@ -2,6 +2,7 @@ package profiles
 
 import (
 	"context"
+	"time"
 
 	"github.com/blendify-app/mothership/hermes/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,6 +39,7 @@ func (r *repository) Get(ctx context.Context, id string) (Profile, error) {
 }
 
 func (r *repository) Create(ctx context.Context, profile Profile) (*mongo.InsertOneResult, error) {
+	profile.Timestamp = time.Now().Format(time.RFC3339)
 	insertedResult, err := r.collection.InsertOne(ctx, profile)
 	return insertedResult, err
 }

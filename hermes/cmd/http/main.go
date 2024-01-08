@@ -44,7 +44,7 @@ func main() {
 	r := gin.Default()
 
 	// Initialize Hub for websocket connections
-	hub := ws.NewHub()
+	hub := ws.NewHub(dbClient)
 	go hub.Run()
 
 	// Define a healthcheck endpoint
@@ -67,7 +67,7 @@ func main() {
 	{
 		users.UserRoutes(v1Group, dbClient)
 		profiles.ProfileRoutes(v1Group, dbClient)
-		roulette.RouletteRoutes(v1Group, dbClient, hub)
+		roulette.RouletteRoutes(v1Group, dbClient)
 	}
 
 	// Start the server

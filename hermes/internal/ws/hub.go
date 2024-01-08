@@ -1,6 +1,11 @@
 package ws
 
-import "log"
+import (
+	"log"
+
+	roulette "github.com/blendify-app/mothership/hermes/internal/roulette"
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 // Hub maintains the set of active clients and broadcasts messages to the clients
 type Hub struct {
@@ -18,6 +23,9 @@ type Hub struct {
 
 	// Rooms represent a chat session between two clients
 	rooms map[string]map[*Client]bool
+
+	// Reference to the roulette service
+	roulette roulette.Service
 }
 
 type MessageType string
@@ -37,15 +45,18 @@ const (
 	LeaveRoom     MessageType = "leave_room"
 	Reconnect     MessageType = "reconnect"
 	SendMessage   MessageType = "send_message"
+	UserMessage   MessageType = "user_message"
 )
 
-func NewHub() *Hub {
+func NewHub(db *mongo.Database) *Hub {
+	profileRepository := roulette.NewRepository(db.Client())
 	return &Hub{
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
 		rooms:      make(map[string]map[*Client]bool),
+		roulette:   roulette.NewService(profileRepository),
 	}
 }
 

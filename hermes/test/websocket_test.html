@@ -22,7 +22,7 @@
     <script>
       const token =
         "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlBkd1h0dGpOWG5CLXBNUHhhLUtPMiJ9.eyJnaXZlbl9uYW1lIjoiQmxlbmRpZnkiLCJuaWNrbmFtZSI6ImJsZW5kaWZ5YXBwIiwibmFtZSI6IkJsZW5kaWZ5IiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0o5by00NlJ3anRmdFJEaXRSd25SdzYyUW9GWjRybzdUd3RWVzc4ZUZiYT1zOTYtYyIsImxvY2FsZSI6ImVuIiwidXBkYXRlZF9hdCI6IjIwMjQtMDEtMDJUMTI6MjQ6MjAuMzUyWiIsImVtYWlsIjoiYmxlbmRpZnlhcHBAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImlzcyI6Imh0dHBzOi8vZGV2LXBiMmw3aWc4ZWNhdmthc2UudXMuYXV0aDAuY29tLyIsImF1ZCI6IkJhdjg3aWlZeHVVTks5RFA2VHk3V1dpbXBRM0NPMkxvIiwiaWF0IjoxNzA0MTk4MjYxLCJleHAiOjE3MDQyMzQyNjEsInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTE0ODY5MjA1NTQ2NTQ1MzAzNTA5Iiwic2lkIjoiamJuOEpPVUY1OXY5bzZTMlFhZnNCbXlKY0hNd0xaS1kifQ.kcoZRbf22dsENA_Y1WOykuUrW28kI3KBSl6ap4LZwZVsgMupZ0WDxaWKY7H01CUpNTCr_qAhIalFXC5VCJpZglIuIHB-znI8FLKLE3DW-i6Px0wQbekIwqFTMel8b4Ze-eu8nJCUYD_CJUYXwiIGAzsQcxij-FXZTS5J9_Cs8cMnOcS8ZOPcYPafoW0cxRzgj02_9fW6RMSKgW892CZ4vvsiSZomdbC6gUvKgLt35wM6pA3OV-NzdYfx2hfZpYYlQe8o1V5pJM3J6ju8b-8x514RS4Bph0ZjNZckQsgWPgGlhkcDa7eRaZYu4dt1XOaXtodxEbhk9MaX8JKalsWlNA";
-      const socket = new WebSocket(`ws://0.0.0.0:8080/ws?token=${token}`);
+      const socket = new WebSocket(`ws://192.168.0.153:8080/ws?token=${token}`);
       const JOIN_ROULETTE_MSG = {
         type: "join_roulette",
         content: "I want to join the roulette!",

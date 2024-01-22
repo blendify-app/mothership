@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blend Chat Client</title>
+    <style>
+      #chatbox {
+        height: 300px;
+        width: 300px;
+        border: 1px solid black;
+        overflow: auto;
+      }
+      #message {
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chatbox"></div>
+    <input id="message" type="text" />
+    <button id="send">Send</button>
+
+    <script>
+      const token =
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlBkd1h0dGpOWG5CLXBNUHhhLUtPMiJ9.eyJnaXZlbl9uYW1lIjoiQmxlbmRlc2giLCJmYW1pbHlfbmFtZSI6Ikt1bWFyIiwibmlja25hbWUiOiJibGVuZGVzaGt1bWFyIiwibmFtZSI6IkJsZW5kZXNoIEt1bWFyIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0pQV0dyMnZaMWg1ZGVfTWdtM0VQNVVJeHM3V1o0Skp2Rk04aFVRWnVTSD1zOTYtYyIsImxvY2FsZSI6ImVuIiwidXBkYXRlZF9hdCI6IjIwMjQtMDEtMjJUMTQ6NTA6NTcuNzkwWiIsImVtYWlsIjoiYmxlbmRlc2hrdW1hckBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6Ly9kZXYtcGIybDdpZzhlY2F2a2FzZS51cy5hdXRoMC5jb20vIiwiYXVkIjoiQmF2ODdpaVl4dVVOSzlEUDZUeTdXV2ltcFEzQ08yTG8iLCJpYXQiOjE3MDU5MzUwNjAsImV4cCI6MTcwNTk3MTA2MCwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTgyNzk5OTE1NDM2NTc3MTA3MjciLCJzaWQiOiJocmVJSXplME1FNGZERFlYcU5LOGVmb3QwNlk0QWlBNyIsIm5vbmNlIjoiTmhlN1VlY2lXdzZBT1VtdGE2Z3FGUnliNTUtMDJWYmVJRE1xY1pneTBuSSJ9.ByQFLfzdWj0AQQTMbtUAZHis8h5FhX_wDcBo9f5nAIp56XfEFlYa0AQ1uVMrrBtrspNDh2HuCbNeLASmuD_6BkO7s2neooOf35wN7ETjX3c7dchuUw5L26YPPq5DAed1DBnqIaFeYstlmZ9YCfiKWGenYor8WajnQfzBhfBKaSjgzCLCPYdJSzICuOXacBPTi9-6FKS8PeUuwrtu_LXG2HPm1pF42E7rgjSJoCog12M3awcyiXIviwa8X0TL3ITo4sbIznlc1poMG1Jk-ZzkZYRCBQlNs0iaJ92lNKH027SoqECjNkkQPVt7do3EIZpM8AzgFXHGpEFKZ541nKP_xQ";
+      const socket = new WebSocket(`ws://192.168.0.153:8080/ws?token=${token}`);
+      const JOIN_ROULETTE_MSG = {
+        type: "join_roulette",
+        content: "I want to join the room!",
+        room: "general",
+        timestamp: 1641568800,
+        error: "",
+      };
+
+      socket.addEventListener("open", (event) => {
+        console.log("Connected to the WebSocket server");
+        socket.send(JSON.stringify(JOIN_ROULETTE_MSG));
+      });
+
+      socket.addEventListener("message", (event) => {
+        const chatbox = document.getElementById("chatbox");
+        const message = document.createElement("p");
+        message.textContent = event.data;
+        chatbox.appendChild(message);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      });
+
+      socket.addEventListener("error", (error) => {
+        console.log("WebSocket error: " + error);
+      });
+
+      socket.addEventListener("close", (event) => {
+        console.log("WebSocket connection closed");
+      });
+
+      document.getElementById("send").addEventListener("click", () => {
+        const message = document.getElementById("message").value;
+        socket.send(message);
+        document.getElementById("message").value = "";
+      });
+    </script>
+  </body>
+</html>

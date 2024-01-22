@@ -3,6 +3,7 @@ package ws
 import (
 	"log"
 
+	"github.com/blendify-app/mothership/hermes/internal/rooms"
 	roulette "github.com/blendify-app/mothership/hermes/internal/roulette"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -26,6 +27,8 @@ type Hub struct {
 
 	// Reference to the roulette service
 	roulette roulette.Service
+
+	roomService rooms.Service
 }
 
 type MessageType string
@@ -50,13 +53,15 @@ const (
 
 func NewHub(db *mongo.Database) *Hub {
 	profileRepository := roulette.NewRepository(db.Client())
+	roomRepo := rooms.NewRepository(db.Client())
 	return &Hub{
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
-		rooms:      make(map[string]map[*Client]bool),
-		roulette:   roulette.NewService(profileRepository),
+		broadcast:   make(chan []byte),
+		register:    make(chan *Client),
+		unregister:  make(chan *Client),
+		clients:     make(map[*Client]bool),
+		rooms:       make(map[string]map[*Client]bool),
+		roulette:    roulette.NewService(profileRepository),
+		roomService: rooms.NewService(roomRepo),
 	}
 }
 
@@ -76,12 +81,13 @@ func (h *Hub) Run() {
 			for client := range h.clients {
 				select {
 				case client.send <- message:
-					log.Printf("sending")
+					log.Printf("sending" + client.id)
 				default:
 					close(client.send)
 					delete(h.clients, client)
 				}
 			}
+
 		}
 	}
 }

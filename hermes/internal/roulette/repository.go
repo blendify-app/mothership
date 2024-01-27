@@ -17,7 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, roulette Roulette) (*mongo.InsertOneResult, error)
 	Update(ctx context.Context, roulette Roulette) (*mongo.UpdateResult, error)
 	Delete(ctx context.Context, id string) (*mongo.DeleteResult, error)
-	FindRandom(ctx context.Context, userID string, done chan<- struct{}) (string, error)
+	FindRandom(ctx context.Context, userID string) (string, error)
 }
 
 type repository struct {
@@ -65,11 +65,11 @@ func (r *repository) Update(ctx context.Context, roulette Roulette) (*mongo.Upda
 }
 
 func (r *repository) Delete(ctx context.Context, id string) (*mongo.DeleteResult, error) {
-	filter := bson.M{"_id": id}
+	filter := bson.M{"user_id": id}
 	return r.collection.DeleteOne(ctx, filter)
 }
 
-func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- struct{}) (string, error) {
+func (r *repository) FindRandom(ctx context.Context, userID string) (string, error) {
 	// Create a pipeline that excludes a certain user and randomly selects one user
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{{Key: "user_id", Value: bson.D{{Key: "$ne", Value: userID}}}}}},
@@ -77,11 +77,11 @@ func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- 
 	}
 
 	cur, err := r.collection.Aggregate(ctx, pipeline)
+	defer cur.Close(ctx)
+
 	if err != nil {
 		return "", err
 	}
-
-	defer cur.Close(ctx)
 
 	var roulette []Roulette
 	if err := cur.All(ctx, &roulette); err != nil {
@@ -89,15 +89,10 @@ func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- 
 		return "", err
 	}
 
-	log.Printf("matching %v with %v", userID, roulette)
-
-	if len(roulette) == 0 {
-		done <- struct{}{}
-		return "", nil
+	if len(roulette) > 0 {
+		return roulette[0].UserID, nil
 	}
 
-	matchedUserID := roulette[0].UserID
-	done <- struct{}{} // Signal that a match has been found
-	return matchedUserID, nil
+	return "", nil
 
 }

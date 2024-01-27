@@ -91,14 +91,12 @@ func (c *Client) readPump() {
 		}
 		log.Printf("msg: %v", msg)
 
-		var matchedUserID string
-
 		switch msg.Type {
 		case JoinRoulette:
-			// Handle joining the roulette pool
 			log.Printf("%v is joining roulette", c.id)
 			newRouletteParticipant := &roulette.Roulette{
 				UserID: c.id,
+				Object: roulette.RouletteObject,
 			}
 			_, err := c.hub.roulette.Create(context.TODO(), *newRouletteParticipant)
 			if err != nil {
@@ -106,65 +104,57 @@ func (c *Client) readPump() {
 			} else {
 				log.Printf("user added successfully to the pool")
 			}
+
 			c.hub.broadcast <- message
 			c.hub.broadcast <- []byte("u in the pool")
 
-			// Will start an async process to find a match
-			go func() {
-				done := make(chan struct{})
-				matchedUserID, err = c.hub.roulette.FindMatch(context.TODO(), c.hub.roulette.GetRepository(), done, c.id)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				// remove users from pool after match
-				<-done
+			matchedUserID, err := c.hub.roulette.FindMatch(context.TODO(), c.hub.roulette.GetRepository(), c.id)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			if matchedUserID != "" {
 				log.Printf("Match found: %s and %s", c.id, matchedUserID)
-
-				if matchedUserID != "" {
-					roomID, _ := uuid.NewRandom()
-					// Add all known props
-					rooom := rooms.Room{
-						ID:           roomID.String(),
-						Participants: []string{c.id, matchedUserID},
-						Messages: rooms.ChatMessage{
-							Timestamp: time.Now().Format(time.RFC3339),
-						},
-					}
-
-					newRoom, err := c.hub.roomService.Create(context.TODO(), rooom)
-
-					if err != nil {
-						log.Printf("%v", err)
-					} else {
-						log.Printf("new room created: %v", newRoom.ID)
-					}
+				// TODO: refactor to bulk delete
+				_, err := c.hub.roulette.Delete(context.TODO(), c.id)
+				if err != nil {
+					log.Printf("failed to delete %s from roulette pool: %s", c.id, err)
 				}
-			}()
+
+				_, err = c.hub.roulette.Delete(context.TODO(), matchedUserID)
+				if err != nil {
+					log.Printf("failed to delete %s from roulette pool: %s", matchedUserID, err)
+				}
+
+				c.hub.broadcast <- []byte("we got you a match")
+
+				uuid, _ := uuid.NewRandom()
+				roomID := uuid.String()
+				room := rooms.Room{
+					ID:           roomID,
+					Object:       rooms.RoomObject,
+					Participants: []string{c.id, matchedUserID},
+					Messages:     []rooms.ChatMessage{},
+				}
+
+				newRoom, err := c.hub.roomService.Create(context.TODO(), room)
+				c.hub.AddClientToRoom(roomID, c)
+				c.hub.AddClientToRoom(roomID, c.hub.GetClientById(matchedUserID))
+
+				if err != nil {
+					log.Printf("%v", err)
+				} else {
+					log.Printf("new room created: %v", newRoom.ID)
+				}
+
+				c.hub.broadcast <- []byte("we got you in a room")
+			} else {
+				c.hub.broadcast <- []byte("we are finding you a match")
+			}
 
 		case "join_room":
-			// Handle joining a specific room
-			// if matchedUserID != "" {
-			// 	c.send <- []byte("Match Found!")
-			// 	//add them to the room
-			// 	room := rooms.Room{
-			// 		Participants: []string{},
-			// 	}
-
-			// 	// call the Create method with the room object
-			// 	roomDetails, err := c.hub.roomService.Create(context.Background(), room)
-
-			// 	if err != nil {
-			// 		log.Printf("Failed to create room: %v", err)
-			// 	}
-
-			// 	c.hub.roomService.AddUserToRoom(context.Background(), roomDetails.RoomID, c.id)
-			// 	c.hub.roomService.AddUserToRoom(context.Background(), roomDetails.RoomID, matchedUserID)
-
-			// 	//remove them from roulette pool
-			// 	c.hub.roulette.Delete(context.TODO(), c.id)
-			// 	c.hub.roulette.Delete(context.TODO(), matchedUserID)
-			// }
+			//handle joining room
 		case "reconnect":
 			// Handle reconnecting to the chat
 		case "send_message":

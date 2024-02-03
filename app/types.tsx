@@ -27,6 +27,7 @@ export type RootStackParamList = {
     Settings: undefined;
     Roulette: undefined;
     Blendify: undefined;
+    Chat: undefined;
 
 };
 

@@ -73,5 +73,5 @@ func main() {
 	}
 
 	// Start the server
-	r.Run("0.0.0.0:8080") // TODO: change this to an ENV var
+	r.Run("192.168.0.153:8080") // TODO: change this to an ENV var
 }

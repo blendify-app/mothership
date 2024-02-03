@@ -14,7 +14,8 @@ type Service interface {
 	Get(ctx context.Context, id string) (Roulette, error)
 	Create(ctx context.Context, input Roulette) (Roulette, error)
 	Delete(ctx context.Context, id string) (bool, error)
-	FindMatch(ctx context.Context, rouletteRepository Repository, done chan<- struct{}, id string)
+	FindMatch(ctx context.Context, repo Repository, id string) (string, error)
+	GetRepository() Repository
 }
 
 func (m Roulette) validate() error {
@@ -58,6 +59,14 @@ func (s service) Delete(ctx context.Context, id string) (bool, error) {
 	return true, nil
 }
 
-func (s service) FindMatch(ctx context.Context, rouletteRepository Repository, done chan<- struct{}, id string) {
-	rouletteRepository.FindRandom(ctx, id, done)
+func (s service) FindMatch(ctx context.Context, repo Repository, id string) (string, error) {
+	matchedUserID, err := s.repo.FindRandom(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return matchedUserID, nil
+}
+
+func (s service) GetRepository() Repository {
+	return s.repo
 }

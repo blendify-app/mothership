@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/blendify-app/mothership/hermes/config"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,7 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, roulette Roulette) (*mongo.InsertOneResult, error)
 	Update(ctx context.Context, roulette Roulette) (*mongo.UpdateResult, error)
 	Delete(ctx context.Context, id string) (*mongo.DeleteResult, error)
-	FindRandom(ctx context.Context, userID string, done chan<- struct{}) error
+	FindRandom(ctx context.Context, userID string) (string, error)
 }
 
 type repository struct {
@@ -48,6 +49,11 @@ func (r *repository) Get(ctx context.Context, id string) (Roulette, error) {
 
 func (r *repository) Create(ctx context.Context, roulette Roulette) (*mongo.InsertOneResult, error) {
 	roulette.Timestamp = time.Now().Format(time.RFC3339)
+	ID, err := uuid.NewRandom()
+	roulette.ID = ID.String()
+	if err != nil {
+		return nil, err
+	}
 	insertedResult, err := r.collection.InsertOne(ctx, roulette)
 	return insertedResult, err
 }
@@ -59,11 +65,11 @@ func (r *repository) Update(ctx context.Context, roulette Roulette) (*mongo.Upda
 }
 
 func (r *repository) Delete(ctx context.Context, id string) (*mongo.DeleteResult, error) {
-	filter := bson.M{"_id": id}
+	filter := bson.M{"user_id": id}
 	return r.collection.DeleteOne(ctx, filter)
 }
 
-func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- struct{}) error {
+func (r *repository) FindRandom(ctx context.Context, userID string) (string, error) {
 	// Create a pipeline that excludes a certain user and randomly selects one user
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{{Key: "user_id", Value: bson.D{{Key: "$ne", Value: userID}}}}}},
@@ -71,23 +77,22 @@ func (r *repository) FindRandom(ctx context.Context, userID string, done chan<- 
 	}
 
 	cur, err := r.collection.Aggregate(ctx, pipeline)
-	if err != nil {
-		return err
-	}
-
 	defer cur.Close(ctx)
+
+	if err != nil {
+		return "", err
+	}
 
 	var roulette []Roulette
 	if err := cur.All(ctx, &roulette); err != nil {
 		log.Println(err)
-		return err
+		return "", err
 	}
 
-	log.Printf("matching %v with %v", userID, roulette)
-
-	if len(roulette) == 0 {
-		done <- struct{}{}
+	if len(roulette) > 0 {
+		return roulette[0].UserID, nil
 	}
 
-	return nil
+	return "", nil
+
 }

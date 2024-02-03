@@ -86,7 +86,7 @@ const FillProfileScreen: React.FC<Props> = ({ navigation: { navigate } }) => {
           paddingHorizontal: Spacing * 4,
         }}>
           <AppTouchableOpacity text="Fill my Profile" dark style={{ padding: Spacing, marginBottom: Spacing }} onPress={() => navigate("MoreDetails")}/>
-          <AppTouchableOpacity text="Fill it Later" dark={false} style={{ padding: Spacing }}/>
+          <AppTouchableOpacity text="Fill it Later" dark={false} style={{ padding: Spacing }} onPress={() => navigate("Main")}/>
         </View>
 
         {/* <RadioButtonGroup options={genderOptions} onSelect={handleSelect}/> */}

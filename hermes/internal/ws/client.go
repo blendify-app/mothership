@@ -9,8 +9,10 @@ import (
 
 	"github.com/blendify-app/mothership/hermes/config"
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
+	"github.com/blendify-app/mothership/hermes/internal/rooms"
 	"github.com/blendify-app/mothership/hermes/internal/roulette"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -91,10 +93,10 @@ func (c *Client) readPump() {
 
 		switch msg.Type {
 		case JoinRoulette:
-			// Handle joining the roulette pool
 			log.Printf("%v is joining roulette", c.id)
 			newRouletteParticipant := &roulette.Roulette{
 				UserID: c.id,
+				Object: roulette.RouletteObject,
 			}
 			_, err := c.hub.roulette.Create(context.TODO(), *newRouletteParticipant)
 			if err != nil {
@@ -102,10 +104,57 @@ func (c *Client) readPump() {
 			} else {
 				log.Printf("user added successfully to the pool")
 			}
+
 			c.hub.broadcast <- message
-			c.hub.broadcast <- []byte("u in the pol")
+			c.hub.broadcast <- []byte("u in the pool")
+
+			matchedUserID, err := c.hub.roulette.FindMatch(context.TODO(), c.hub.roulette.GetRepository(), c.id)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			if matchedUserID != "" {
+				log.Printf("Match found: %s and %s", c.id, matchedUserID)
+				// TODO: refactor to bulk delete
+				_, err := c.hub.roulette.Delete(context.TODO(), c.id)
+				if err != nil {
+					log.Printf("failed to delete %s from roulette pool: %s", c.id, err)
+				}
+
+				_, err = c.hub.roulette.Delete(context.TODO(), matchedUserID)
+				if err != nil {
+					log.Printf("failed to delete %s from roulette pool: %s", matchedUserID, err)
+				}
+
+				c.hub.broadcast <- []byte("we got you a match")
+
+				uuid, _ := uuid.NewRandom()
+				roomID := uuid.String()
+				room := rooms.Room{
+					ID:           roomID,
+					Object:       rooms.RoomObject,
+					Participants: []string{c.id, matchedUserID},
+					Messages:     []rooms.ChatMessage{},
+				}
+
+				newRoom, err := c.hub.roomService.Create(context.TODO(), room)
+				c.hub.AddClientToRoom(roomID, c)
+				c.hub.AddClientToRoom(roomID, c.hub.GetClientById(matchedUserID))
+
+				if err != nil {
+					log.Printf("%v", err)
+				} else {
+					log.Printf("new room created: %v", newRoom.ID)
+				}
+
+				c.hub.broadcast <- []byte("we got you in a room")
+			} else {
+				c.hub.broadcast <- []byte("we are finding you a match")
+			}
+
 		case "join_room":
-			// Handle joining a specific room
+			//handle joining room
 		case "reconnect":
 			// Handle reconnecting to the chat
 		case "send_message":

@@ -13,11 +13,12 @@ type service struct {
 type Service interface {
 	Get(ctx context.Context, id string) (Room, error)
 	Create(ctx context.Context, input Room) (Room, error)
+	AddUserToRoom(ctx context.Context, RoomID string, UserID string) error
 }
 
 func (m Room) validate() error {
 	return validation.ValidateStruct(&m,
-		validation.Field(&m.RoomID, validation.Required),
+		validation.Field(&m.ID, validation.Required),
 	)
 }
 
@@ -45,4 +46,9 @@ func (s service) Create(ctx context.Context, room Room) (Room, error) {
 	}
 
 	return room, nil
+}
+
+func (s service) AddUserToRoom(ctx context.Context, roomID string, userID string) error {
+	_, err := s.repo.AddUser(ctx, roomID, userID)
+	return err
 }

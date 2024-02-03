@@ -9,6 +9,7 @@ import (
 
 	middleware "github.com/blendify-app/mothership/hermes/internal/auth"
 	"github.com/blendify-app/mothership/hermes/internal/profiles"
+	"github.com/blendify-app/mothership/hermes/internal/rooms"
 	"github.com/blendify-app/mothership/hermes/internal/roulette"
 	"github.com/blendify-app/mothership/hermes/internal/ws"
 
@@ -68,8 +69,9 @@ func main() {
 		users.UserRoutes(v1Group, dbClient)
 		profiles.ProfileRoutes(v1Group, dbClient)
 		roulette.RouletteRoutes(v1Group, dbClient)
+		rooms.RoomRoutes(v1Group, dbClient)
 	}
 
 	// Start the server
-	r.Run("0.0.0.0:8080") // TODO: change this to an ENV var
+	r.Run("192.168.0.153:8080") // TODO: change this to an ENV var
 }

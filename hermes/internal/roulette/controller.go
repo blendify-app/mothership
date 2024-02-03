@@ -18,7 +18,7 @@ func RouletteRoutes(sg *gin.RouterGroup, db *mongo.Database) {
 	}
 }
 
-func FindMatch(ctx context.Context, rouletteRepository Repository, claims *middleware.CustomClaims, done chan<- struct{}) {
+func FindMatch(ctx context.Context, rouletteRepository Repository, claims *middleware.CustomClaims) {
 	log.Printf("finding a match for: %v", claims.Sub)
-	rouletteRepository.FindRandom(ctx, claims.Sub, done)
+	rouletteRepository.FindRandom(ctx, claims.Sub)
 }
